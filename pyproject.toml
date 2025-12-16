@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pydataquality"
+version = "0.1.0"
+authors = [
+  {name = "Dominion Akinrotimi", email = "contact.dominionakinrotimi@gmail.com"},
+]
+description = "A comprehensive data quality analysis library for pandas DataFrames"
+readme = "README.md"
+license = {text = "MIT License"}
+requires-python = ">=3.7"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pandas>=1.0.0",
+    "numpy>=1.18.0",
+    "matplotlib>=3.0.0",
+    "seaborn>=0.11.0",
+    "jinja2>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=6.0", "pytest-cov>=2.0", "black>=21.0", "flake8>=3.9"]
+docs = ["sphinx>=4.0", "sphinx-rtd-theme>=1.0"]
+notebook = ["jupyter>=1.0", "ipywidgets>=7.0"]
+
+[project.urls]
+Homepage = "https://github.com/DominionAkinrotimi/pydataquality"
+Bug-Tracker = "https://github.com/DominionAkinrotimi/pydataquality/issues"
+Source = "https://github.com/DominionAkinrotimi/pydataquality"

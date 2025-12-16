@@ -1,7 +1,5 @@
 # PyDataQuality
 
-# PyDataQuality
-
 **The Enterprise-Grade Data Quality Engine for Python.**
 
 PyDataQuality automates the tedious 80% of data science: validating, profiling, and cleaning new datasets. It transforms raw pandas DataFrames into publication-ready quality reports with a single line of code. Designed for high-velocity data teams, it features batch processing for big data, custom rule validation, and AI-powered remediation suggestions.
@@ -40,7 +38,7 @@ PyDataQuality automates the tedious 80% of data science: validating, profiling, 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/pydataquality.git
+git clone https://github.com/DominionAkinrotimi/pydataquality.git
 cd pydataquality
 
 # Install in development mode
@@ -74,7 +72,7 @@ pdq.generate_report(analyzer, output_path="quality_report.html", format='html')
 
 ## Documentation
 
-- [Quickstart Guide](docs/quickstart.md)
+- [Quickstart Guide](/docs/quickstart.md)
 - [API Reference](docs/api.md)
 - [Examples](examples/)
 
@@ -135,4 +133,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Built with pandas, matplotlib, and seaborn
 - Inspired by real-world data quality challenges
+
 - Designed for data scientists and analysts

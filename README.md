@@ -72,7 +72,7 @@ pdq.generate_report(analyzer, output_path="quality_report.html", format='html')
 
 ## Documentation
 
-- [Quickstart Guide](/docs/quickstart.md)
+- [Quickstart Guide](docs/quickstart.md)
 - [API Reference](docs/api.md)
 - [Examples](examples/)
 
@@ -135,3 +135,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspired by real-world data quality challenges
 
 - Designed for data scientists and analysts
+

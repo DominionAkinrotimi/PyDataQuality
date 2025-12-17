@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="pydataquality",
-    version="0.1.0",
+    version="0.1.1",
     author="Dominion Akinrotimi",
     author_email="contact.dominionakinrotimi@gmail.com",
     description="Enterprise-grade automated data quality assessment and reporting engine for pandas",
@@ -53,4 +53,5 @@ setup(
         "Bug Reports": "https://github.com/DominionAkinrotimi/pydataquality/issues",
         "Source": "https://github.com/DominionAkinrotimi/pydataquality",
     },
+
 )

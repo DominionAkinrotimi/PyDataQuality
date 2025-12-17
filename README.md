@@ -131,9 +131,14 @@ visualizer = pdq.create_visual_report(analyzer)
 # Generate HTML report
 pdq.generate_report(analyzer, output_path="quality_report.html", format='html')
 
-# Get AI assistance for fixes (optional)
+# Get AI assistance for fixes (includes EDA context by default)
 prompt = pdq.generate_ai_prompt(analyzer)
-print(prompt)  # Copy to ChatGPT/Claude/Gemini
+print(prompt) 
+
+# Output example:
+# "I have a dataset with 1000 rows. Issues: age (outliers: outside [18, 65]).
+#  Statistical Context: age (int64): Mean=42, Max=150...
+#  Please write a script..."
 ```
 
 ## Documentation

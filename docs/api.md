@@ -16,6 +16,7 @@ DataQualityAnalyzer(df: pandas.DataFrame, name: str = "Dataset")
 **Parameters:**
 - `df`: Input pandas DataFrame to analyze
 - `name`: Name of the dataset for reporting purposes
+- `config`: Dictionary of configuration overrides (optional). Keys matching `QUALITY_THRESHOLDS`.
 
 **Attributes:**
 - `df`: Copy of the input DataFrame
@@ -186,6 +187,7 @@ Perform comprehensive data quality analysis on a DataFrame.
 - `df`: pandas.DataFrame to analyze
 - `name`: Name of the dataset for reporting
 - `verbose`: Whether to print progress information
+- `config`: Dictionary of configuration overrides (optional)
 
 **Returns:** `DataQualityAnalyzer` instance
 

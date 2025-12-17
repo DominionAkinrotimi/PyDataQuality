@@ -137,7 +137,7 @@ analyzer = pdq.DataQualityAnalyzer(df, rules=rules)
 drift_stats = pdq.compare_reports(analyzer_last_week, analyzer_today)
 print(drift_stats)
 ```
-```
+
 
 ## Advanced Features
 
@@ -195,6 +195,7 @@ potential_ids = pdq.detect_potential_ids(df)
 
 ```python
 # Define custom configuration
+# If 'missing_critical': 0.1, the syetem will warn even if only 10% of data is missing
 config = {
     'missing_critical': 0.4,       # 40% instead of 30%
     'outlier_threshold': 3.0,      # Use 3*IQR for outliers
@@ -238,3 +239,4 @@ VISUAL_CONFIG['color_palette'] = ['#1a5276', '#229954', '#f39c12', '#e74c3c']
 - Review the test files for usage patterns
 
 - Examine the generated HTML reports for interpretation guidance
+

@@ -20,7 +20,34 @@ class QualityReportGenerator:
     
     def __init__(self, analyzer: DataQualityAnalyzer):
         self.analyzer = analyzer
-    
+
+    def generate_ai_remediation_prompt(self) -> str:
+        """
+        Generate an AI remediation prompt for fixing data quality issues.
+        
+        This creates a prompt that can be copied to an AI assistant to get
+        automated code for fixing the detected quality issues.
+        
+        Returns
+        -------
+        str
+            AI remediation prompt text
+        """
+        summary = self.analyzer.get_summary()
+        
+        prompt = f"I have a dataset '{self.analyzer.name}' with {summary['dataset']['rows']} rows. "
+        
+        # Get critical issues
+        critical_issues = [f"{i.column} ({i.issue_type})" for i in self.analyzer.issues if i.severity=='critical']
+        
+        if critical_issues:
+            prompt += f"It has critical quality issues in columns: {', '.join(critical_issues)}. "
+            prompt += "Please write a Python script using pandas to clean this dataset by handling missing values and outliers based on best practices."
+        else:
+            prompt += "The data quality appears good, but I'd like to optimize it further. Please suggest improvements."
+        
+        return prompt
+       
     def generate_text_report(self) -> str:
         """
         Generate a detailed text report.
@@ -250,14 +277,7 @@ class QualityReportGenerator:
                     elif issue.issue_type == 'outliers':
                         recommendations.append(f"• Column '{issue.column}': Cap values at 1.5*IQR or use robust scaling.")
             
-            # Add AI Prompt
-            recommendations.append("<br><b>AI Remediation Prompt:</b>")
-            prompt = f"I have a dataset '{self.analyzer.name}' with {summary['dataset']['rows']} rows. "
-            path_issues = [f"{i.column} ({i.issue_type})" for i in self.analyzer.issues if i.severity=='critical']
-            prompt += f"It has critical quality issues in columns: {', '.join(path_issues)}. "
-            prompt += "Please write a Python script using pandas to clean this dataset by handling missing values and outliers based on best practices."
-            recommendations.append(f"<i>Copy this prompt to your AI assistant:</i><br><code style='background:#eee;padding:5px;display:block;margin-top:5px'>{prompt}</code>")
-        
+            
         if not recommendations:
             recommendations.append("Data quality appears good. No specific actions required at this time.")
         
@@ -1914,4 +1934,5 @@ class QualityReportGenerator:
         </html>
 
         '''
+
 

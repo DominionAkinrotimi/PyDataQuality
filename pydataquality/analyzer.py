@@ -1,4 +1,4 @@
-﻿import pandas as pd
+import pandas as pd
 import numpy as np
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
@@ -45,10 +45,16 @@ class DataQualityAnalyzer:
         Dataset name for reporting
     """
     
-    def __init__(self, df: pd.DataFrame, name: str = "Dataset", rules: Dict = None):
+    def __init__(self, df: pd.DataFrame, name: str = "Dataset", rules: Dict = None, config: Dict = None):
         self.df = df.copy()
         self.name = name
         self.rules = rules or {}  # Custom validation rules per column
+        
+        # Merge custom config with defaults
+        self.config = QUALITY_THRESHOLDS.copy()
+        if config:
+            self.config.update(config)
+            
         self.issues: List[QualityIssue] = []
         self.column_stats: Dict[str, ColumnStats] = {}
         self.dataset_stats: Dict = {}
@@ -175,7 +181,7 @@ class DataQualityAnalyzer:
     def _check_numeric_issues(self, col_data: pd.Series, stats: ColumnStats):
         """Check for numeric column issues."""
         # Missing values
-        if stats.missing_percentage > QUALITY_THRESHOLDS['missing_critical'] * 100:
+        if stats.missing_percentage > self.config['missing_critical'] * 100:
             self.issues.append(QualityIssue(
                 column=stats.name,
                 issue_type='missing_values',
@@ -183,9 +189,9 @@ class DataQualityAnalyzer:
                 message=f'High percentage of missing values ({stats.missing_percentage:.1f}%)',
                 affected_count=stats.missing_count,
                 affected_percentage=stats.missing_percentage,
-                details={'threshold': QUALITY_THRESHOLDS['missing_critical'] * 100}
+                details={'threshold': self.config['missing_critical'] * 100}
             ))
-        elif stats.missing_percentage > QUALITY_THRESHOLDS['missing_warning'] * 100:
+        elif stats.missing_percentage > self.config['missing_warning'] * 100:
             self.issues.append(QualityIssue(
                 column=stats.name,
                 issue_type='missing_values',
@@ -193,7 +199,7 @@ class DataQualityAnalyzer:
                 message=f'Moderate percentage of missing values ({stats.missing_percentage:.1f}%)',
                 affected_count=stats.missing_count,
                 affected_percentage=stats.missing_percentage,
-                details={'threshold': QUALITY_THRESHOLDS['missing_warning'] * 100}
+                details={'threshold': self.config['missing_warning'] * 100}
             ))
         
         # Check for outliers if we have enough data and it's not boolean
@@ -204,8 +210,8 @@ class DataQualityAnalyzer:
                 Q3 = numeric_data.quantile(0.75)
                 IQR = Q3 - Q1
                 
-                lower_bound = Q1 - QUALITY_THRESHOLDS['outlier_threshold'] * IQR
-                upper_bound = Q3 + QUALITY_THRESHOLDS['outlier_threshold'] * IQR
+                lower_bound = Q1 - self.config['outlier_threshold'] * IQR
+                upper_bound = Q3 + self.config['outlier_threshold'] * IQR
                 
                 outliers = numeric_data[(numeric_data < lower_bound) | (numeric_data > upper_bound)]
                 
@@ -231,7 +237,7 @@ class DataQualityAnalyzer:
                 pass
         
         # Check skewness
-        if 'skew' in stats.stats and abs(stats.stats['skew']) > QUALITY_THRESHOLDS['skew_threshold']:
+        if 'skew' in stats.stats and abs(stats.stats['skew']) > self.config['skew_threshold']:
             self.issues.append(QualityIssue(
                 column=stats.name,
                 issue_type='skewed_distribution',
@@ -245,7 +251,7 @@ class DataQualityAnalyzer:
     def _check_categorical_issues(self, col_data: pd.Series, stats: ColumnStats):
         """Check for categorical column issues."""
         # Missing values check (same as numeric)
-        if stats.missing_percentage > QUALITY_THRESHOLDS['missing_critical'] * 100:
+        if stats.missing_percentage > self.config['missing_critical'] * 100:
             self.issues.append(QualityIssue(
                 column=stats.name,
                 issue_type='missing_values',
@@ -254,7 +260,7 @@ class DataQualityAnalyzer:
                 affected_count=stats.missing_count,
                 affected_percentage=stats.missing_percentage,
             ))
-        elif stats.missing_percentage > QUALITY_THRESHOLDS['missing_warning'] * 100:
+        elif stats.missing_percentage > self.config['missing_warning'] * 100:
             self.issues.append(QualityIssue(
                 column=stats.name,
                 issue_type='missing_values',
@@ -265,7 +271,7 @@ class DataQualityAnalyzer:
             ))
         
         # Check for low cardinality
-        if stats.unique_count / stats.total_count < QUALITY_THRESHOLDS['unique_threshold']:
+        if stats.unique_count / stats.total_count < self.config['unique_threshold']:
             self.issues.append(QualityIssue(
                 column=stats.name,
                 issue_type='low_cardinality',
@@ -453,8 +459,8 @@ class DataQualityAnalyzer:
                 Q1 = numeric_data.quantile(0.25)
                 Q3 = numeric_data.quantile(0.75)
                 IQR = Q3 - Q1
-                lower = Q1 - QUALITY_THRESHOLDS['outlier_threshold'] * IQR
-                upper = Q3 + QUALITY_THRESHOLDS['outlier_threshold'] * IQR
+                lower = Q1 - self.config['outlier_threshold'] * IQR
+                upper = Q3 + self.config['outlier_threshold'] * IQR
                 
                 # Align mask with original index
                 is_outlier = (col_data < lower) | (col_data > upper)

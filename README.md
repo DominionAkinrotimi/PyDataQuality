@@ -9,17 +9,17 @@ PyDataQuality automates the tedious 80% of data science: validating, profiling, 
 ## Features
 
 ### Core Capabilities
-- ✅ **Data Quality Analysis**: Detect missing values, outliers, inconsistencies, and data type issues
-- ✅ **Data Extraction**: Pinpoint and extract problematic rows (e.g., specific outliers) for remediation via `get_problematic_rows()`
-- ✅ **Multi-Format Support**: Native support for CSV, Excel (.xlsx, .xls), JSON, and Parquet files
-- ✅ **CLI Interface**: Auto-detects file formats from the terminal - no coding required
-- ✅ **Interactive Notebook Display**: Direct rendering in Jupyter/Colab with `show_report()`
-- ✅ **Batch Sampling**: Process large datasets (GBs) efficiently with chunk-based sampling
-- ✅ **Custom YAML Rules**: Enterprise-grade validation with configuration files
-- ✅ **AI Remediation Prompts**: Auto-generated Python scripts for fixing detected issues
-- ✅ **Comprehensive Visualizations**: Publication-quality plots for data quality assessment
-- ✅ **Professional Reports**: HTML, text, and JSON reports with actionable insights
-- ✅ **Easy Integration**: Works seamlessly with pandas DataFrames from any source
+- **Data Quality Analysis**: Detect missing values, outliers, inconsistencies, and data type issues
+- **Data Extraction**: Pinpoint and extract problematic rows (e.g., specific outliers) for remediation via `get_problematic_rows()`
+- **Multi-Format Support**: Native support for CSV, Excel (.xlsx, .xls), JSON, and Parquet files
+- **CLI Interface**: Auto-detects file formats from the terminal - no coding required
+- **Interactive Notebook Display**: Direct rendering in Jupyter/Colab with `show_report()`
+- **Batch Sampling**: Process large datasets (GBs) efficiently with chunk-based sampling
+- **Custom YAML Rules**: Enterprise-grade validation with configuration files
+- **AI Remediation Prompts**: Auto-generated Python scripts for fixing detected issues
+- **Comprehensive Visualizations**: Publication-quality plots for data quality assessment
+- **Professional Reports**: HTML, text, and JSON reports with actionable insights
+- **Easy Integration**: Works seamlessly with pandas DataFrames from any source
 
 ### Supported Input Formats
 **CLI**: Auto-detects CSV, Excel (.xlsx, .xls), JSON, Parquet  
@@ -68,6 +68,10 @@ visualizer = pdq.create_visual_report(analyzer)
 
 # Generate HTML report
 pdq.generate_report(analyzer, output_path="quality_report.html", format='html')
+
+# Get AI assistance for fixes (optional)
+prompt = pdq.generate_ai_prompt(analyzer)
+print(prompt)  # Copy to ChatGPT/Claude/Gemini
 ```
 
 ## Documentation
@@ -135,4 +139,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspired by real-world data quality challenges
 
 - Designed for data scientists and analysts
+
 

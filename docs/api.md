@@ -209,6 +209,24 @@ Generate a formatted report from analysis results.
 
 **Returns:** Report content if `output_path` is None, otherwise None
 
+### `generate_ai_prompt(analyzer) -> str`
+Generate an AI remediation prompt for fixing data quality issues.
+
+This creates a prompt that can be copied to an AI assistant (ChatGPT, Claude, Gemini) to get automated code for fixing detected quality issues.
+
+**Parameters:**
+- `analyzer`: `DataQualityAnalyzer` instance
+
+**Returns:** AI remediation prompt text
+
+**Example:**
+```python
+analyzer = pdq.analyze_dataframe(df)
+prompt = pdq.generate_ai_prompt(analyzer)
+print(prompt)
+# Copy the prompt and paste it into ChatGPT/Claude/Gemini
+```
+
 ### `quick_quality_check(df, name="Dataset") -> Dict`
 Perform a quick data quality check with summary output.
 

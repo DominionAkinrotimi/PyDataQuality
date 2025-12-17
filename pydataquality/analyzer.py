@@ -105,6 +105,9 @@ class DataQualityAnalyzer:
             self._analyze_categorical_column(col_data, stats)
         elif pd.api.types.is_datetime64_any_dtype(col_data):
             self._analyze_datetime_column(col_data, stats)
+        elif pd.api.types.is_object_dtype(col_data):
+            # Fallback for generic object columns (usually strings/mixed)
+            self._analyze_categorical_column(col_data, stats)
         
         self.column_stats[column] = stats
     

@@ -27,14 +27,14 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=[
-        "pandas>=1.0.0",
-        "numpy>=1.18.0",
-        "matplotlib>=3.0.0",
-        "seaborn>=0.11.0",
+        "pandas>=1.3.0",
+        "numpy>=1.20.0",
+        "matplotlib>=3.4.0",
+        "seaborn>=0.11.2",
         "jinja2>=3.0.0",
-        "PyYAML>=5.0",
+        "PyYAML>=5.4",
     ],
     extras_require={
         "dev": [
@@ -42,6 +42,10 @@ setup(
             "pytest-cov>=2.0",
             "black>=21.0",
             "flake8>=3.9",
+        ],
+        "notebook": [
+            "ipython>=7.0",
+            "jupyter>=1.0",
         ],
         "docs": [
             "sphinx>=4.0",

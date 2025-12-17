@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="pydataquality",
-    version="0.1.0",
+    version="0.1.1",
     author="Dominion Akinrotimi",
     author_email="contact.dominionakinrotimi@gmail.com",
     description="Enterprise-grade automated data quality assessment and reporting engine for pandas",
@@ -25,6 +25,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.8",
@@ -59,4 +60,5 @@ setup(
     },
 
 )
+
 

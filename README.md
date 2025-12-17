@@ -114,7 +114,15 @@ summary = pdq.quick_quality_check(df, name="My Dataset")
 analyzer = pdq.analyze_dataframe(df, name="My Dataset")
 
 # Analysis with custom thresholds (e.g., stricter missing data check)
-config = {'missing_critical': 0.1, 'outlier_threshold': 2.0}
+# Analysis with custom thresholds and excluded values
+config = {
+    'missing_critical': 0.1, 
+    'outlier_threshold': 2.0,
+    'exclude_values': {
+        'age': [150, -5],  # specific values to ignore
+        'sales': [-100]
+    }
+}
 analyzer = pdq.analyze_dataframe(df, name="My Dataset", config=config)
 
 # Generate visualizations

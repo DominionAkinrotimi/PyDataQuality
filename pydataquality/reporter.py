@@ -1,4 +1,4 @@
-﻿"""
+"""
 Report generation module for data quality analysis.
 """
 
@@ -37,12 +37,12 @@ class QualityReportGenerator:
         
         prompt = f"I have a dataset '{self.analyzer.name}' with {summary['dataset']['rows']} rows. "
         
-        # Get critical issues
-        critical_issues = [f"{i.column} ({i.issue_type})" for i in self.analyzer.issues if i.severity=='critical']
+        # Get critical and warning issues
+        significant_issues = [f"{i.column} ({i.issue_type})" for i in self.analyzer.issues if i.severity in ['critical', 'warning']]
         
-        if critical_issues:
-            prompt += f"It has critical quality issues in columns: {', '.join(critical_issues)}. "
-            prompt += "Please write a Python script using pandas to clean this dataset by handling missing values and outliers based on best practices."
+        if significant_issues:
+            prompt += f"It has the following quality issues: {', '.join(significant_issues)}. "
+            prompt += "Please write a Python script using pandas to clean this dataset by handling these issues based on best practices."
         else:
             prompt += "The data quality appears good, but I'd like to optimize it further. Please suggest improvements."
         

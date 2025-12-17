@@ -91,8 +91,11 @@ cd pydataquality
 # Install in development mode
 pip install -e .
 
-# Or install requirements directly
+# Install requirements directly
 pip install -r requirements.txt
+
+# For interactive notebook support (Jupyter/Colab)
+pip install ".[notebook]"
 ```
 
 ## Quick Start
@@ -109,6 +112,10 @@ summary = pdq.quick_quality_check(df, name="My Dataset")
 
 # Comprehensive analysis
 analyzer = pdq.analyze_dataframe(df, name="My Dataset")
+
+# Analysis with custom thresholds (e.g., stricter missing data check)
+config = {'missing_critical': 0.1, 'outlier_threshold': 2.0}
+analyzer = pdq.analyze_dataframe(df, name="My Dataset", config=config)
 
 # Generate visualizations
 visualizer = pdq.create_visual_report(analyzer)

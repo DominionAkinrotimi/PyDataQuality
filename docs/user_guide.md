@@ -107,6 +107,21 @@ print(f"Found {len(bad_age_rows)} bad rows")
 bad_age_rows.to_csv("ages_to_fix.csv")
 ```
 
+### Getting AI Assistance for Fixes
+Need help writing code to fix the issues? Generate an AI prompt:
+
+```python
+# Generate AI remediation prompt
+prompt = pdq.generate_ai_prompt(analyzer)
+print(prompt)
+
+# Copy the output and paste into ChatGPT, Claude, or Gemini
+# Example output:
+# "I have a dataset 'Sales Data' with 1000 rows. It has critical quality 
+# issues in columns: age (outliers), price (missing_values). Please write 
+# a Python script using pandas to clean this dataset..."
+```
+
 ### Supported File Formats
 PyDataQuality supports any format pandas can read.
 *   **CLI**: Auto-detects `.csv`, `.xlsx`, `.xls`, `.json`, `.parquet`.
@@ -132,3 +147,4 @@ PyDataQuality supports any format pandas can read.
 
 **Question: Can I use this with Excel?**
 *   **Yes**: Just read it with pandas first: `df = pd.read_excel("data.xlsx")`, then pass `df` to PyDataQuality.
+

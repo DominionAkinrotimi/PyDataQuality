@@ -211,13 +211,14 @@ Generate a formatted report from analysis results.
 
 **Returns:** Report content if `output_path` is None, otherwise None
 
-### `generate_ai_prompt(analyzer) -> str`
+### `generate_ai_prompt(analyzer, include_eda=True) -> str`
 Generate an AI remediation prompt for fixing data quality issues.
 
-This creates a prompt that can be copied to an AI assistant (ChatGPT, Claude, Gemini) to get automated code for fixing detected quality issues.
+This creates a prompt that can be copied to an AI assistant (ChatGPT, Claude, Gemini) to get automated code for fixing detected quality issues. It includes detailed issue descriptions (e.g., outlier ranges) and statistical context (EDA) to help the AI make informed decisions.
 
 **Parameters:**
 - `analyzer`: `DataQualityAnalyzer` instance
+- `include_eda`: Boolean (default True). Whether to inject statistical summaries (mean, min, max, unique counts) into the prompt.
 
 **Returns:** AI remediation prompt text
 

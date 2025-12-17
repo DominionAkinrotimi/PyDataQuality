@@ -1,4 +1,3 @@
-# docs/quickstart.md
 # Quickstart Guide for PyDataQuality
 
 ## Installation
@@ -52,6 +51,11 @@ pdq.show_report(analyzer, theme='creative')
 
 # 5. Generate HTML file
 pdq.generate_report(analyzer, output_path="quality_report.html", format='html')
+
+
+# 6. Get AI assistance (optional)
+prompt = pdq.generate_ai_prompt(analyzer)
+print(prompt)  # Copy to ChatGPT/Claude/Gemini for automated fixes
 ```
 
 ## Supported Data Formats
@@ -225,4 +229,5 @@ VISUAL_CONFIG['color_palette'] = ['#1a5276', '#229954', '#f39c12', '#e74c3c']
 
 - Check the examples directory
 - Review the test files for usage patterns
+
 - Examine the generated HTML reports for interpretation guidance

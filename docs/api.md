@@ -297,6 +297,7 @@ QUALITY_THRESHOLDS = {
     'skew_threshold': 1.0,        # Absolute skewness > 1 = skewed
     'unique_threshold': 0.01,     # Unique values < 1% of rows
     'zero_threshold': 0.8,        # >80% zeros = suspicious
+    'exclude_values': {},         # Dict of {column: [value1, value2]} to ignore
 }
 ```
 

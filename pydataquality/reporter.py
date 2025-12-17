@@ -21,12 +21,17 @@ class QualityReportGenerator:
     def __init__(self, analyzer: DataQualityAnalyzer):
         self.analyzer = analyzer
 
-    def generate_ai_remediation_prompt(self) -> str:
+    def generate_ai_remediation_prompt(self, include_eda: bool = True) -> str:
         """
         Generate an AI remediation prompt for fixing data quality issues.
         
         This creates a prompt that can be copied to an AI assistant to get
         automated code for fixing the detected quality issues.
+        
+        Parameters
+        ----------
+        include_eda : bool
+            Whether to include statistical context (EDA) in the prompt.
         
         Returns
         -------
@@ -37,12 +42,69 @@ class QualityReportGenerator:
         
         prompt = f"I have a dataset '{self.analyzer.name}' with {summary['dataset']['rows']} rows. "
         
-        # Get critical and warning issues
-        significant_issues = [f"{i.column} ({i.issue_type})" for i in self.analyzer.issues if i.severity in ['critical', 'warning']]
+        # Get critical and warning issues with DETAILS
+        significant_issues = []
+        affected_columns = set()
+        
+        for issue in self.analyzer.issues:
+            if issue.severity in ['critical', 'warning']:
+                affected_columns.add(issue.column)
+                # Basic description
+                desc = f"{issue.column} ({issue.issue_type}"
+                
+                # Add context based on details
+                details = []
+                if issue.issue_type == 'outliers' and issue.details:
+                    lower = issue.details.get('lower_bound')
+                    upper = issue.details.get('upper_bound')
+                    if lower is not None and upper is not None:
+                        details.append(f"outside [{lower:.2f}, {upper:.2f}]")
+                        
+                elif issue.issue_type == 'missing_values':
+                    details.append(f"{issue.affected_percentage:.1f}% missing")
+                    
+                elif issue.issue_type == 'inconsistent_values' and issue.details:
+                    examples = issue.details.get('examples', [])
+                    if examples:
+                        details.append(f"e.g., {', '.join(examples[:3])}")
+                
+                # Close description
+                if details:
+                    desc += f": {'; '.join(details)})"
+                else:
+                    desc += ")"
+                
+                significant_issues.append(desc)
         
         if significant_issues:
             prompt += f"It has the following quality issues: {', '.join(significant_issues)}. "
-            prompt += "Please write a Python script using pandas to clean this dataset by handling these issues based on best practices."
+            
+            # Inject EDA Context if requested
+            if include_eda and affected_columns:
+                prompt += "\n\nHere is the statistical context (EDA) for the affected columns:\n"
+                for col in affected_columns:
+                    if col in self.analyzer.column_stats:
+                        stats = self.analyzer.column_stats[col]
+                        prompt += f"- {col} ({stats.dtype}): "
+                        
+                        # Add specific stats based on type
+                        context = []
+                        if 'mean' in stats.stats:
+                            context.append(f"Mean={stats.stats['mean']:.2f}")
+                            context.append(f"Median={stats.stats.get('median', 0):.2f}")
+                            context.append(f"Min={stats.stats.get('min', 0):.2f}")
+                            context.append(f"Max={stats.stats.get('max', 0):.2f}")
+                        else:
+                            # Categorical / Object stats
+                            context.append(f"Unique Values={stats.unique_count}")
+                            if 'most_common' in stats.stats:
+                                context.append(f"Top Value='{stats.stats['most_common']}'")
+                                
+                        prompt += ", ".join(context) + "\n"
+            
+            prompt += "\nPlease write a Python script using pandas to clean this dataset. "
+            prompt += "Consider different strategies (e.g., capping vs removal for outliers, imputation vs dropping for missing) "
+            prompt += "based on the logic and EDA context provided above. Provide a brief explanation of your chosen strategy."
         else:
             prompt += "The data quality appears good, but I'd like to optimize it further. Please suggest improvements."
         
@@ -1934,5 +1996,4 @@ class QualityReportGenerator:
         </html>
 
         '''
-
-
+        

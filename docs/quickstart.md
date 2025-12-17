@@ -8,6 +8,9 @@ pip install -e .
 
 # Or install requirements directly
 pip install pandas numpy matplotlib seaborn jinja2
+
+# For full feature support (including notebooks)
+pip install ".[notebook]"
 ```
 
 ## CLI Usage (No Code Required)
@@ -191,11 +194,15 @@ potential_ids = pdq.detect_potential_ids(df)
 ### Custom Thresholds
 
 ```python
-from pydataquality.config import QUALITY_THRESHOLDS
+# Define custom configuration
+config = {
+    'missing_critical': 0.4,       # 40% instead of 30%
+    'outlier_threshold': 3.0,      # Use 3*IQR for outliers
+    'zero_threshold': 0.9          # Strict zero check
+}
 
-# Modify thresholds
-QUALITY_THRESHOLDS['missing_critical'] = 0.4  # 40% instead of 30%
-QUALITY_THRESHOLDS['outlier_threshold'] = 3.0  # Use 3*IQR for outliers
+# Pass config during analysis
+analyzer = pdq.analyze_dataframe(df, config=config)
 ```
 
 ### Visual Configuration

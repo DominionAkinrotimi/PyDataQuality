@@ -150,4 +150,30 @@ def show_report(analyzer, theme='creative'):
     html = reporter.generate_html_report(theme=theme)
     display(HTML(html))
 
+def generate_ai_prompt(analyzer):
+    """
+    Generate an AI remediation prompt for fixing data quality issues.
+    
+    This creates a prompt that can be copied to an AI assistant (like ChatGPT,
+    Claude, or Gemini) to get automated code for fixing detected quality issues.
+    
+    Parameters
+    ----------
+    analyzer : DataQualityAnalyzer
+        Analyzer instance with detected issues
+        
+    Returns
+    -------
+    str
+        AI remediation prompt text
+        
+    Example
+    -------
+    >>> analyzer = pdq.analyze_dataframe(df)
+    >>> prompt = pdq.generate_ai_prompt(analyzer)
+    >>> print(prompt)
+    """
+    reporter = QualityReportGenerator(analyzer)
+    return reporter.generate_ai_remediation_prompt()
+
 

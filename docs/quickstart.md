@@ -137,8 +137,8 @@ analyzer = pdq.DataQualityAnalyzer(df, rules=rules)
 drift_stats = pdq.compare_reports(analyzer_last_week, analyzer_today)
 print(drift_stats)
 ```
+```
 
----
 ## Advanced Features
 
 ### Access Detailed Column Information
@@ -199,7 +199,13 @@ potential_ids = pdq.detect_potential_ids(df)
 config = {
     'missing_critical': 0.4,       # 40% instead of 30%
     'outlier_threshold': 3.0,      # Use 3*IQR for outliers
-    'zero_threshold': 0.9          # Strict zero check
+    'zero_threshold': 0.9,         # Strict zero check
+    
+    # Whitelist specific values (e.g. known sentinel values)
+    'exclude_values': {
+        'customer_age': [999, -1],
+        'region': ['Unknown', 'N/A']
+    }
 }
 
 # Pass config during analysis
@@ -239,5 +245,3 @@ VISUAL_CONFIG['color_palette'] = ['#1a5276', '#229954', '#f39c12', '#e74c3c']
 - Review the test files for usage patterns
 
 - Examine the generated HTML reports for interpretation guidance
-
-

@@ -3,7 +3,7 @@ PyDataQuality - A comprehensive data quality analysis tool for Python.
 """
 
 __version__ = '0.1.0'
-__author__ = 'Data Quality Team'
+__author__ = 'Dominion Akinrotimi'
 
 from .analyzer import DataQualityAnalyzer
 from .reporter import QualityReportGenerator
@@ -28,7 +28,7 @@ from .comparator import compare_reports
 from .comparator import compare_reports
 
 # Convenience functions
-def analyze_dataframe(df, name="Dataset", verbose=False):
+def analyze_dataframe(df, name="Dataset", verbose=False, config=None):
     """
     Convenience function to analyze a DataFrame.
     
@@ -40,13 +40,15 @@ def analyze_dataframe(df, name="Dataset", verbose=False):
         Name of the dataset
     verbose : bool
         Whether to print progress
+    config : dict
+        Custom configuration settings (optional)
         
     Returns
     -------
     DataQualityAnalyzer
         Analyzer instance
     """
-    analyzer = DataQualityAnalyzer(df, name=name)
+    analyzer = DataQualityAnalyzer(df, name=name, config=config)
     # Analysis is triggered in __init__
     return analyzer
 

@@ -180,6 +180,9 @@ class DataQualityAnalyzer:
     
     def _check_numeric_issues(self, col_data: pd.Series, stats: ColumnStats):
         """Check for numeric column issues."""
+        # Get exclusions for this column
+        exclude_values = self.config.get('exclude_values', {}).get(stats.name, [])
+        
         # Missing values
         if stats.missing_percentage > self.config['missing_critical'] * 100:
             self.issues.append(QualityIssue(
@@ -204,6 +207,11 @@ class DataQualityAnalyzer:
         
         # Check for outliers if we have enough data and it's not boolean
         numeric_data = col_data.dropna()
+        
+        # Apply exclusions
+        if exclude_values:
+            numeric_data = numeric_data[~numeric_data.isin(exclude_values)]
+            
         if len(numeric_data) >= 10 and not pd.api.types.is_bool_dtype(numeric_data):
             try:
                 Q1 = numeric_data.quantile(0.25)
@@ -217,11 +225,15 @@ class DataQualityAnalyzer:
                 
                 if len(outliers) > 0:
                     outlier_percentage = (len(outliers) / len(numeric_data)) * 100
+                    
+                    # Enhanced message with explainability
+                    message = f'Found {len(outliers)} outliers outside range [{lower_bound:.2f}, {upper_bound:.2f}]'
+                    
                     self.issues.append(QualityIssue(
                         column=stats.name,
                         issue_type='outliers',
                         severity='warning' if outlier_percentage < 10 else 'critical',
-                        message=f'Found {len(outliers)} outliers ({outlier_percentage:.1f}% of data)',
+                        message=message,
                         affected_count=len(outliers),
                         affected_percentage=outlier_percentage,
                         details={
@@ -229,7 +241,8 @@ class DataQualityAnalyzer:
                             'upper_bound': float(upper_bound),
                             'min_value': float(numeric_data.min()),
                             'max_value': float(numeric_data.max()),
-                            'outlier_examples': outliers.head(5).tolist()
+                            'outlier_examples': outliers.head(5).tolist(),
+                            'explanation': f"Values outside [{lower_bound:.2f}, {upper_bound:.2f}] (IQR method)"
                         }
                     ))
             except Exception:
@@ -250,6 +263,9 @@ class DataQualityAnalyzer:
     
     def _check_categorical_issues(self, col_data: pd.Series, stats: ColumnStats):
         """Check for categorical column issues."""
+        # Get exclusions for this column
+        exclude_values = self.config.get('exclude_values', {}).get(stats.name, [])
+        
         # Missing values check (same as numeric)
         if stats.missing_percentage > self.config['missing_critical'] * 100:
             self.issues.append(QualityIssue(
@@ -288,6 +304,10 @@ class DataQualityAnalyzer:
             lower_counts = {}
             for value, count in value_counts.items():
                 if isinstance(value, str):
+                    # Skip excluded values
+                    if value in exclude_values:
+                        continue
+                        
                     lower_val = value.strip().lower()
                     if lower_val in lower_counts:
                         lower_counts[lower_val] += count
@@ -448,6 +468,9 @@ class DataQualityAnalyzer:
         mask = pd.Series(False, index=self.df.index)
         col_data = self.df[column]
         
+        # Get exclusions
+        exclude_values = self.config.get('exclude_values', {}).get(column, [])
+        
         # Check missing
         if issue_type in ['missing_values', 'all']:
             mask |= col_data.isnull()
@@ -456,6 +479,11 @@ class DataQualityAnalyzer:
         if issue_type in ['outliers', 'all'] and pd.api.types.is_numeric_dtype(col_data):
             try:
                 numeric_data = col_data.dropna()
+                
+                # Apply exclusions for calculation
+                if exclude_values:
+                    numeric_data = numeric_data[~numeric_data.isin(exclude_values)]
+                
                 Q1 = numeric_data.quantile(0.25)
                 Q3 = numeric_data.quantile(0.75)
                 IQR = Q3 - Q1
@@ -463,7 +491,12 @@ class DataQualityAnalyzer:
                 upper = Q3 + self.config['outlier_threshold'] * IQR
                 
                 # Align mask with original index
-                is_outlier = (col_data < lower) | (col_data > upper)
+                # Only flag outliers that are NOT in the exclude list
+                if exclude_values:
+                    is_outlier = ((col_data < lower) | (col_data > upper)) & (~col_data.isin(exclude_values))
+                else:
+                    is_outlier = (col_data < lower) | (col_data > upper)
+                    
                 mask |= is_outlier
             except Exception:
                 pass

@@ -2,15 +2,9 @@
 PyDataQuality - A comprehensive data quality analysis tool for Python.
 """
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __author__ = 'Dominion Akinrotimi'
 
-from .analyzer import DataQualityAnalyzer
-from .reporter import QualityReportGenerator
-from .visualizer import DataQualityVisualizer
-from .analyzer import DataQualityAnalyzer
-from .reporter import QualityReportGenerator
-from .visualizer import DataQualityVisualizer
 from .analyzer import DataQualityAnalyzer
 from .reporter import QualityReportGenerator
 from .visualizer import DataQualityVisualizer
@@ -177,5 +171,3 @@ def generate_ai_prompt(analyzer):
     """
     reporter = QualityReportGenerator(analyzer)
     return reporter.generate_ai_remediation_prompt()
-
-

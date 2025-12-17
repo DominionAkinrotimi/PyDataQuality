@@ -138,7 +138,7 @@ drift_stats = pdq.compare_reports(analyzer_last_week, analyzer_today)
 print(drift_stats)
 ```
 
-
+---
 ## Advanced Features
 
 ### Access Detailed Column Information
@@ -239,4 +239,5 @@ VISUAL_CONFIG['color_palette'] = ['#1a5276', '#229954', '#f39c12', '#e74c3c']
 - Review the test files for usage patterns
 
 - Examine the generated HTML reports for interpretation guidance
+
 

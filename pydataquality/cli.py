@@ -2,10 +2,12 @@
 """
 Command-line interface for PyDataQuality.
 """
+
 import argparse
 import sys
 import os
 import pandas as pd
+
 # Use relative imports for package compatibility
 try:
     from . import analyze_dataframe, generate_report, sample_dataframe, create_visual_report
@@ -13,6 +15,7 @@ except ImportError:
     # Fallback if run as script directly (not recommended for package usage)
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from pydataquality import analyze_dataframe, generate_report, sample_dataframe, create_visual_report
+
 def main():
     parser = argparse.ArgumentParser(
         description='PyDataQuality - Automated Data Quality Analysis Tool',
@@ -96,6 +99,7 @@ Examples:
              report_file = os.path.join(output_path, f"{args.name.replace(' ', '_')}_quality_report.{args.report}")
         else:
              report_file = os.path.join(output_path, f"{args.name.replace(' ', '_')}_quality_report.{args.report}")
+
         # Pass theme only if format is html
         kwargs = {}
         if args.report == 'html':
@@ -121,5 +125,6 @@ Examples:
         print(f"Total missing: {summary['missing_data_overview']['total_missing_cells']:,} "
               f"({summary['missing_data_overview']['total_missing_percentage']:.1f}%)")
     print("=" * 60)
+
 if __name__ == '__main__':
     main()

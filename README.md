@@ -4,7 +4,7 @@
 
 PyDataQuality automates the tedious 80% of data science: validating, profiling, and cleaning new datasets. It transforms raw pandas DataFrames into publication-ready quality reports with a single line of code. Designed for high-velocity data teams, it features batch processing for big data, custom rule validation, and AI-powered remediation suggestions.
 
-![Data Quality Analysis](docs/images/sample_visualization.png)
+![Data Quality Analysis](https://raw.githubusercontent.com/DominionAkinrotimi/pydataquality/main/docs/images/sample_visualization.png)
 
 ## Features
 
@@ -141,11 +141,26 @@ print(prompt)
 #  Please write a script..."
 ```
 
+## CLI Usage
+
+Run the analysis directly from your terminal:
+
+```bash
+# Basic usage
+python -m pydataquality data.csv
+
+# Generate professional HTML report
+python -m pydataquality data.csv --report html --theme professional
+
+# Create visualizations
+python -m pydataquality data.csv --visualize
+```
+
 ## Documentation
 
-- [Quickstart Guide](docs/quickstart.md)
-- [API Reference](docs/api.md)
-- [Examples](examples/)
+- [Quickstart Guide](https://github.com/DominionAkinrotimi/pydataquality/blob/main/docs/quickstart.md)
+- [API Reference](https://github.com/DominionAkinrotimi/pydataquality/blob/main/docs/api.md)
+- [Examples](https://github.com/DominionAkinrotimi/pydataquality/blob/main/examples/)
 
 ## Examples
 

@@ -22,7 +22,7 @@ PyDataQuality automates the tedious 80% of data science: validating, profiling, 
 - **Easy Integration**: Works seamlessly with pandas DataFrames from any source
 
 ### Supported Input Formats
-**CLI**: Auto-detects CSV, Excel (.xlsx, .xls), JSON, Parquet  
+**CLI**: Auto-detects CSV, Excel (.xlsx, .xls), JSON, Parquet (`python -m pydataquality data.csv`)  
 **Python API**: Accepts any pandas DataFrame from:
 - CSV files (`pd.read_csv()`)
 - Excel files (`pd.read_excel()`)
@@ -228,6 +228,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspired by real-world data quality challenges
 
 - Designed for data scientists and analysts
+
 
 
 

@@ -170,8 +170,12 @@ QualityReportGenerator(analyzer: DataQualityAnalyzer)
 ##### `generate_text_report() -> str`
 Generates a detailed text report.
 
-##### `generate_html_report(include_visuals: bool = False) -> str`
+##### `generate_html_report(include_visuals: bool = False, theme: str = 'creative') -> str`
 Generates an HTML report with optional visualizations.
+
+**Parameters:**
+- `include_visuals`: Boolean. Whether to include plots.
+- `theme`: Report theme ('creative', 'professional', 'simple').
 
 ##### `save_report(output_path: str, format: str = 'html')`
 Saves report to file in specified format ('html', 'text', 'json').
@@ -201,15 +205,26 @@ Create visualizations from data quality analysis.
 
 **Returns:** `DataQualityVisualizer` instance
 
-### `generate_report(analyzer, output_path=None, format='html') -> Union[str, None]`
+### `generate_report(analyzer, output_path=None, format='html', theme='professional') -> Union[str, None]`
 Generate a formatted report from analysis results.
 
 **Parameters:**
 - `analyzer`: `DataQualityAnalyzer` instance
 - `output_path`: Path to save the report file (if None, returns content)
 - `format`: Report format ('html', 'text', 'json')
+- `theme`: HTML report theme ('professional', 'creative', 'simple'). Default is 'professional'.
 
 **Returns:** Report content if `output_path` is None, otherwise None
+
+### `show_report(analyzer, theme='creative')`
+Render the interactive quality report directly in a Jupyter/Colab notebook.
+
+**Parameters:**
+- `analyzer`: `DataQualityAnalyzer` instance
+- `theme`: Dashboard theme. Options:
+    - `'creative'`: Modern, dark-mode inspired design with gradients (Default).
+    - `'professional'`: Clean, corporate-friendly design suitable for PDFs.
+    - `'simple'`: Minimalist layout for quick checking.
 
 ### `generate_ai_prompt(analyzer, include_eda=True) -> str`
 Generate an AI remediation prompt for fixing data quality issues.

@@ -170,19 +170,26 @@ Check the `examples` directory for comprehensive usage examples:
 2. **Advanced Features**: Custom configurations and visualizations
 3. **Real-world Scenarios**: Handling various data quality issues
 
-## Project Structure
 
+## Project Structure
 ```
-pydataquality/
-├── analyzer.py          # Core analysis engine
-├── visualizer.py        # Data visualization module
-├── reporter.py          # Report generation
-├── utils.py            # Utility functions
-├── config.py           # Configuration settings
-├── __init__.py         # Package exports
-├── examples/           # Usage examples
-├── tests/              # Unit tests
-└── docs/              # Documentation
+PyDataQuality/
+├── pydataquality/       # Main package directory
+│   ├── __init__.py      # Exports
+│   ├── __main__.py      # Package entry point
+│   ├── analyzer.py      # Core analysis engine
+│   ├── cli.py           # Package CLI logic
+│   ├── comparator.py    # Data drift detection
+│   ├── config.py        # Settings management
+│   ├── reporter.py      # Report generation
+│   ├── utils.py         # Helper functions
+│   └── visualizer.py    # Visualization engine
+├── docs/                # Documentation
+├── examples/            # Usage examples
+├── tests/               # Unit tests
+├── cli.py               # Root CLI script (local usage)
+├── setup.py             # Installation script
+└── requirements.txt     # Dependencies
 ```
 
 ## Key Components
@@ -221,6 +228,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspired by real-world data quality challenges
 
 - Designed for data scientists and analysts
+
 
 
 

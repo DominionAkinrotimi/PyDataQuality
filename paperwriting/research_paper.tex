@@ -7,11 +7,11 @@
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 \usepackage{iftex}
 \ifPDFTeX
-  \usepackage[T1]{fontenc}
-  \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provide euro and other symbols
-\else % if luatex or xetex
-  \usepackage{unicode-math} % this also loads fontspec
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
@@ -359,6 +359,19 @@ computation but in configuration: deploying a new data source requires
 defining multiple interconnected YAML configuration artifacts, which
 imposes significant cognitive overhead for small teams or researchers
 who need a quick quality gate.
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio,alt={Figure 2: Great Expectations Configuration vs Computation Workflow}]{fig_great_expectations_bw.png}}
+\caption{Figure 2: Great Expectations Configuration vs Computation
+Workflow}
+\end{figure}
+
+\textbf{Figure 2:} Illustration of the Great Expectations workflow.
+While computationally robust, the operational burden is heavily skewed
+toward configuration, requiring developers to orchestrate multiple
+interconnected YAML and JSON artifacts (Data Contexts, Expectation
+Suites, and Checkpoints) before data validation can execute.
 
 \textbf{Deepchecks} (Deepchecks Inc., 2021) extends profiling to
 explicit train/test integrity comparisons, particularly for ML dataset

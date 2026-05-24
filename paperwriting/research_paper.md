@@ -87,6 +87,10 @@ In the Python ecosystem, the most widely adopted tool is **YData-Profiling** (Br
 
 **Great Expectations** (Superconductive, 2019) approaches the problem from a *contract testing* perspective, allowing teams to define declarative "expectations" about data properties. While powerful and production-battle-tested, its overhead lies not in computation but in configuration: deploying a new data source requires defining multiple interconnected YAML configuration artifacts, which imposes significant cognitive overhead for small teams or researchers who need a quick quality gate.
 
+![Figure 2: Great Expectations Configuration vs Computation Workflow](fig_great_expectations_bw.png)
+
+**Figure 2:** Illustration of the Great Expectations workflow. While computationally robust, the operational burden is heavily skewed toward configuration, requiring developers to orchestrate multiple interconnected YAML and JSON artifacts (Data Contexts, Expectation Suites, and Checkpoints) before data validation can execute.
+
 **Deepchecks** (Deepchecks Inc., 2021) extends profiling to explicit train/test integrity comparisons, particularly for ML dataset validation. Its scope is broader but its dependency footprint is heavier.
 
 **Evidently AI** (Evidently AI, 2021) focuses specifically on ML monitoring, providing rich drift detection reports optimized for model monitoring dashboards. Like YData-Profiling, it excels in exploratory analysis but is not designed for low-overhead, programmatic integration at the batch ingestion layer.

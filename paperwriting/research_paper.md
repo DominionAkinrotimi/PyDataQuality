@@ -81,7 +81,7 @@ The remainder of this paper is structured as follows. Section II surveys the rel
 
 ### 2.1 Data Quality Frameworks and Profiling Libraries
 
-The problem of automated data quality assessment has attracted substantial research attention over the past three decades. Early work by Redman (1996) formalized data quality along multiple dimensions — accuracy, completeness, consistency, timeliness — providing the conceptual vocabulary that underpins most modern frameworks. More recently, the Data-Centric AI movement has spurred initiatives like DataPerf (Mazumder et al., 2023), establishing standardized benchmarks for data-centric algorithms, and highlighting the critical need for scalable, programmatic data auditing.
+The problem of automated data quality assessment has attracted substantial research attention over the past three decades. Early work by Redman (1996) formalized data quality along multiple dimensions — accuracy, completeness, consistency, timeliness — providing the conceptual vocabulary that underpins most modern frameworks. More recently, the Data-Centric AI movement has spurred initiatives like DataPerf (Mazumder et al., 2023), establishing standardized benchmarks for data-centric algorithms, and DC-Check (Seedat et al., 2024), providing rigorous checklists for reliable machine learning development, highlighting the critical need for scalable, programmatic data auditing.
 
 In the Python ecosystem, the most widely adopted tool is **YData-Profiling** (Brugman, 2019), which generates comprehensive HTML reports through a pandas-based analysis engine. While valuable for exploratory data analysis in notebooks, it suffers from significant computational overhead. Our benchmarks quantify this overhead at 3.4–6.9 seconds on a 6-column synthetic dataset, compared to PyDataQuality's 82–261 ms — a difference that becomes compounding when validation must be performed at every pipeline stage or in real-time streaming contexts.
 
@@ -106,7 +106,7 @@ The **Kolmogorov-Smirnov (KS) two-sample test** (Kolmogorov, 1933; Smirnov, 1948
 
 ### 2.3 AI-Augmented Data Remediation
 
-The use of large language models (LLMs) as code-generation engines for data transformation tasks is an emerging research area. Choi et al. (2022) demonstrated that LLMs can generate syntactically correct and semantically appropriate pandas transformation code when provided with structured context about a dataset. PyDataQuality's AI Remediation Prompt generator operationalizes this capability by automatically compiling detected issues, dataset statistics, and column metadata into a structured prompt template that can be submitted to any LLM API (ChatGPT, Claude, Gemini) to generate ready-to-execute data cleaning scripts — reducing the remediation cycle from hours of manual scripting to seconds of AI-assisted automation.
+The use of large language models (LLMs) as code-generation engines for data transformation tasks is an emerging research area. Choi et al. (2022) demonstrated that LLMs can generate syntactically correct and semantically appropriate pandas transformation code when provided with structured context about a dataset. Recent works, such as the position paper by Xu et al. (2024) and comprehensive surveys by Zhou et al. (2026), have emphasized the increasingly agentic role of LLMs in automating data preparation and cleaning workflows. PyDataQuality's AI Remediation Prompt generator operationalizes this capability by automatically compiling detected issues, dataset statistics, and column metadata into a structured prompt template that can be submitted to any LLM API (ChatGPT, Claude, Gemini) to generate ready-to-execute data cleaning scripts — reducing the remediation cycle from hours of manual scripting to seconds of AI-assisted automation.
 
 ---
 
@@ -1013,27 +1013,35 @@ The library is available as open-source software (`pip install pydataquality`) u
 
 10. McKinney, W. (2012). *Python for Data Analysis: Data Wrangling with Pandas, NumPy, and IPython*. O'Reilly Media, Inc.
 
-11. Ng, A. Y., Laird, D., & He, L. (2021). *Data-Centric AI: Perspectives and Challenges*. DeepLearning.AI. Whitepaper. https://datacentricai.org
+11. Mazumder, M. et al. (2023). DataPerf: Benchmarking Data for Machine Learning. *Thirty-seventh Conference on Neural Information Processing Systems Datasets and Benchmarks Track*.
 
-12. Redman, T. C. (1996). *Data Quality for the Information Age*. Artech House.
+12. Ng, A. Y., Laird, D., & He, L. (2021). *Data-Centric AI: Perspectives and Challenges*. DeepLearning.AI. Whitepaper. https://datacentricai.org
 
-13. Sambasivan, N., Kapania, S., Highfill, H., Akrong, D., Paritosh, P., & Aroyo, L. (2021). "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In *Proceedings of the CHI Conference on Human Factors in Computing Systems*, Article 39.
+13. Redman, T. C. (1996). *Data Quality for the Information Age*. Artech House.
 
-14. Shannon, C. E. (1948). A mathematical theory of communication. *Bell System Technical Journal*, 27(3), 379–423.
+14. Sambasivan, N., Kapania, S., Highfill, H., Akrong, D., Paritosh, P., & Aroyo, L. (2021). "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In *Proceedings of the CHI Conference on Human Factors in Computing Systems*, Article 39.
 
-15. Siddiqi, N. (2006). *Credit Risk Scorecards: Developing and Implementing Intelligent Credit Scoring*. Wiley.
+15. Seedat, N., Imrie, F., & van der Schaar, M. (2024). Navigating Data-Centric Artificial Intelligence With DC-Check: Advances, Challenges, and Opportunities. *IEEE Transactions on Artificial Intelligence*, 5(6), 2589–2603.
 
-16. Smirnov, N. V. (1948). Table for estimating the goodness of fit of empirical distributions. *Annals of Mathematical Statistics*, 19(2), 279–281.
+16. Shannon, C. E. (1948). A mathematical theory of communication. *Bell System Technical Journal*, 27(3), 379–423.
 
-17. Superconductive. (2019). *Great Expectations: Always know what to expect from your data*. https://greatexpectations.io
+17. Siddiqi, N. (2006). *Credit Risk Scorecards: Developing and Implementing Intelligent Credit Scoring*. Wiley.
 
-18. Tukey, J. W. (1977). *Exploratory Data Analysis*. Addison-Wesley.
+18. Smirnov, N. V. (1948). Table for estimating the goodness of fit of empirical distributions. *Annals of Mathematical Statistics*, 19(2), 279–281.
 
-19. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I. (2017). Attention is all you need. In *Advances in Neural Information Processing Systems (NIPS)*, 30.
+19. Superconductive. (2019). *Great Expectations: Always know what to expect from your data*. https://greatexpectations.io
 
-20. Widmer, G., & Kubat, M. (1996). Learning in the presence of concept drift and hidden contexts. *Machine Learning*, 23(1), 69–101.
+20. Tukey, J. W. (1977). *Exploratory Data Analysis*. Addison-Wesley.
 
-21. Wu, Y., & Bacon, D. W. (1999). Population Stability Index: A metric for measuring population shift. Internal Credit Risk Working Paper. [Reprinted in: *Journal of Credit Risk*, 4(1), 35–42, 2008. https://doi.org/10.21314/JCR.2008.083]
+21. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I. (2017). Attention is all you need. In *Advances in Neural Information Processing Systems (NIPS)*, 30.
+
+22. Widmer, G., & Kubat, M. (1996). Learning in the presence of concept drift and hidden contexts. *Machine Learning*, 23(1), 69–101.
+
+23. Wu, Y., & Bacon, D. W. (1999). Population Stability Index: A metric for measuring population shift. Internal Credit Risk Working Paper. [Reprinted in: *Journal of Credit Risk*, 4(1), 35–42, 2008. https://doi.org/10.21314/JCR.2008.083]
+
+24. Xu, X., et al. (2024). Position Paper: Data-Centric AI in the Age of Large Language Models. *Findings of the Association for Computational Linguistics: EMNLP 2024*.
+
+25. Zhou, W., et al. (2026). Can LLMs Clean Up Your Mess? A Survey of Application-Ready Data Preparation with LLMs. *arXiv preprint arXiv:2601.17058*.
 
 ---
 

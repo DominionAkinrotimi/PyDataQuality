@@ -1,67 +1,166 @@
 {
-  "baseline": {
-    "accuracy": 0.626,
-    "precision": 0.6498516320474778,
-    "recall": 0.7604166666666666,
-    "f1": 0.7008
+  "synthetic": {
+    "baseline": {
+      "accuracy": 0.626,
+      "precision": 0.6498516320474778,
+      "recall": 0.7604166666666666,
+      "f1": 0.7008
+    },
+    "pipeline_a": {
+      "accuracy": 0.528,
+      "precision": 0.8085106382978723,
+      "recall": 0.2585034013605442,
+      "f1": 0.3917525773195876
+    },
+    "pipeline_b": {
+      "accuracy": 0.529,
+      "precision": 0.8128342245989305,
+      "recall": 0.2585034013605442,
+      "f1": 0.39225806451612905
+    },
+    "drift_metrics": [
+      {
+        "column": "age",
+        "dtype": "float64",
+        "psi": 0.010852154791883171,
+        "drift_status": "stable",
+        "pct_change": 53.79242320095435,
+        "ks_statistic": 0.0436,
+        "ks_p_value": 0.0825111521929306
+      },
+      {
+        "column": "income",
+        "dtype": "float64",
+        "psi": 0.013765720342902858,
+        "drift_status": "stable",
+        "pct_change": 0.7789697794212522,
+        "ks_statistic": 0.033701974448315915,
+        "ks_p_value": 0.36532263545994736
+      },
+      {
+        "column": "approved",
+        "dtype": "int64",
+        "psi": 0.0,
+        "drift_status": "stable",
+        "pct_change": 0.8230452674896974,
+        "ks_statistic": 0.0048,
+        "ks_p_value": 1.0
+      },
+      {
+        "column": "debt_ratio",
+        "dtype": "float64",
+        "psi": 0.008631000354621783,
+        "drift_status": "stable",
+        "pct_change": -0.4744224299925582,
+        "ks_statistic": 0.024,
+        "ks_p_value": 0.7169363595395083
+      },
+      {
+        "column": "credit_score",
+        "dtype": "float64",
+        "psi": 3.551736912252174,
+        "drift_status": "significant",
+        "pct_change": -17.806902904275386,
+        "ks_statistic": 0.774,
+        "ks_p_value": 1.01e-321
+      }
+    ]
   },
-  "pipeline_a_dirty": {
-    "accuracy": 0.528,
-    "precision": 0.8085106382978723,
-    "recall": 0.2585034013605442,
-    "f1": 0.3917525773195876
-  },
-  "pipeline_b_cleaned": {
-    "accuracy": 0.529,
-    "precision": 0.8128342245989305,
-    "recall": 0.2585034013605442,
-    "f1": 0.39225806451612905
-  },
-  "drift_metrics": [
-    {
-      "column": "debt_ratio",
-      "dtype": "float64",
-      "psi": 0.008631000354621783,
-      "drift_status": "stable",
-      "pct_change": -0.4744224299925582,
-      "ks_statistic": 0.024,
-      "ks_p_value": 0.7169363595395083
+  "real_world": {
+    "baseline": {
+      "r2": 0.9671410502336049,
+      "mse": 0.04336858761828966
     },
-    {
-      "column": "credit_score",
-      "dtype": "float64",
-      "psi": 3.551736912252174,
-      "drift_status": "significant",
-      "pct_change": -17.806902904275386,
-      "ks_statistic": 0.774,
-      "ks_p_value": 1.01e-321
+    "pipeline_a": {
+      "r2": -1.409214712951135,
+      "mse": 3.088076139252239
     },
-    {
-      "column": "age",
-      "dtype": "float64",
-      "psi": 0.010852154791883171,
-      "drift_status": "stable",
-      "pct_change": 53.79242320095435,
-      "ks_statistic": 0.0436,
-      "ks_p_value": 0.0825111521929306
+    "pipeline_b": {
+      "r2": -1.4117741390493732,
+      "mse": 3.0913567528985286
     },
-    {
-      "column": "approved",
-      "dtype": "int64",
-      "psi": 0.0,
-      "drift_status": "stable",
-      "pct_change": 0.8230452674896974,
-      "ks_statistic": 0.0048,
-      "ks_p_value": 1.0
-    },
-    {
-      "column": "income",
-      "dtype": "float64",
-      "psi": 0.013765720342902858,
-      "drift_status": "stable",
-      "pct_change": 0.7789697794212522,
-      "ks_statistic": 0.033701974448315915,
-      "ks_p_value": 0.36532263545994736
-    }
-  ]
+    "drift_metrics": [
+      {
+        "column": "Population",
+        "dtype": "float64",
+        "psi": 0.008206180892794816,
+        "drift_status": "stable",
+        "pct_change": -2.880343983344298,
+        "ks_statistic": 0.0348,
+        "ks_p_value": 0.2611019728782705
+      },
+      {
+        "column": "MedInc",
+        "dtype": "float64",
+        "psi": 4.1378604469534555,
+        "drift_status": "significant",
+        "pct_change": 105.50728226942591,
+        "ks_statistic": 0.6892,
+        "ks_p_value": 2.22e-321
+      },
+      {
+        "column": "MedHouseVal",
+        "dtype": "float64",
+        "psi": 0.015765014583532248,
+        "drift_status": "stable",
+        "pct_change": 2.4742149528686554,
+        "ks_statistic": 0.0392,
+        "ks_p_value": 0.15170739597900856
+      },
+      {
+        "column": "AveOccup",
+        "dtype": "float64",
+        "psi": 0.006153229776936876,
+        "drift_status": "stable",
+        "pct_change": -0.8698568248886753,
+        "ks_statistic": 0.0166,
+        "ks_p_value": 0.97384135130754
+      },
+      {
+        "column": "HouseAge",
+        "dtype": "float64",
+        "psi": 0.025584478111927666,
+        "drift_status": "stable",
+        "pct_change": -0.2901649940654022,
+        "ks_statistic": 0.020850997782705098,
+        "ks_p_value": 0.8858225346590899
+      },
+      {
+        "column": "Latitude",
+        "dtype": "float64",
+        "psi": 0.009863179645346115,
+        "drift_status": "stable",
+        "pct_change": 0.042016761855372356,
+        "ks_statistic": 0.0248,
+        "ks_p_value": 0.6782919151382233
+      },
+      {
+        "column": "Longitude",
+        "dtype": "float64",
+        "psi": 0.013829674401385682,
+        "drift_status": "stable",
+        "pct_change": 0.05831579466984571,
+        "ks_statistic": 0.0334,
+        "ks_p_value": 0.3059174906288232
+      },
+      {
+        "column": "AveRooms",
+        "dtype": "float64",
+        "psi": 0.022617414670147648,
+        "drift_status": "stable",
+        "pct_change": 59.75088277935191,
+        "ks_statistic": 0.0496,
+        "ks_p_value": 0.03238888819452406
+      },
+      {
+        "column": "AveBedrms",
+        "dtype": "float64",
+        "psi": 0.015571084659435915,
+        "drift_status": "stable",
+        "pct_change": -1.1956908658037633,
+        "ks_statistic": 0.0256,
+        "ks_p_value": 0.6393530220960372
+      }
+    ]
+  }
 }

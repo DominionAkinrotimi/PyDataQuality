@@ -38,17 +38,13 @@ All experiments were conducted on the following hardware and software environmen
 
 ## 2. Dependency Installation
 
-The main library dependencies are covered by:
+The main library dependencies are covered:
 
-```bash
-pip install pydataquality
-```
-
-The **experiment-specific dependencies** (not required for the library itself) must be installed separately:
-
-```bash
-pip install ydata-profiling==4.18.4 scikit-learn==1.7.2 psutil==7.2.2
-```
+*   **OS:** Windows 10
+*   **Processor:** Intel Core i7 (Intel64 Family 6 Model 61)
+*   **Memory:** 16GB RAM
+*   **Python:** 3.10.11
+*   **Dependencies:** `pandas==2.3.3`, `numpy==2.2.6`, `scipy==1.15.3`, `ydata-profiling==4.18.4`, `evidently>=0.4.0`, `memory-profiler>=0.61.0`, `scikit-learn==1.7.2`, `psutil==7.2.2`
 
 Or to exactly match our full environment:
 
@@ -88,7 +84,7 @@ Run all commands from the **project root** (`pydataquality/`) directory with the
 source .venv/bin/activate
 
 # Install experiment extras
-pip install ydata-profiling==4.18.4 scikit-learn==1.7.2 psutil==7.2.2
+pip install ydata-profiling==4.18.4 evidently==0.4.0 memory-profiler==0.61.0 scikit-learn==1.7.2 psutil==7.2.2
 ```
 
 ---
@@ -145,15 +141,12 @@ Age outlier rows: 2                            ← matches §3.5 validation
 
 ### Step 3 — Run the Performance Benchmark (Tables 1 & 2, Figure 8)
 
-> ⚠️ **Note on timing:** Absolute execution times depend on your hardware. The **directional results** (PyDataQuality sampled ≈ constant, YData-Profiling >> PyDataQuality) should hold on any comparable machine. Our timings were recorded on an Intel Core i5 (6th gen).
+> ⚠️ **Note on timing:** Absolute execution times depend on your hardware. The **directional results** (PyDataQuality sampled ≈ constant, YData-Profiling >> PyDataQuality) should hold on any comparable machine. Our timings were recorded on an Intel Core i7.
 
-```bash
-python paperwriting/run_benchmarks.py
-```
-
-**What runs:** 4 tools × 4 dataset scales = 16 measurements for time and memory each.
-
-**Expected output file:** `paperwriting/benchmark_results.json` — contains the raw numbers exactly as reported in Tables 1 & 2.
+*   **Location:** `paperwriting/run_benchmarks.py`
+*   **Execution:** `python paperwriting/run_benchmarks.py`
+*   **Output:** Generates `benchmark_results.json` and prints console metrics.
+*   **Notes:** Measures wall-clock time and peak incremental RSS using `memory_profiler`. Values represent the mean of 5 independent runs to ensure statistical significance. Due to OS-level page caching on Windows, memory deltas for small runs may occasionally register as 0.00 MB.
 
 To verify Tables 1 & 2 from the raw JSON:
 

@@ -7,6 +7,8 @@
 #
 # Experiment dependencies:
 ydata-profiling==4.18.4
+evidently>=0.4.0
+memory-profiler>=0.61.0
 scikit-learn==1.7.2
 psutil==7.2.2
 scipy==1.15.3

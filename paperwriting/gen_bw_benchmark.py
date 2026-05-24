@@ -26,13 +26,18 @@ styles = [
     ('pydataquality_sampled', 'PyDataQuality (Sampled)',     's',  '--', '#333333', 2.0),
     ('pydataquality_full',    'PyDataQuality (Full)',        '^',  '-',  '#666666', 2.0),
     ('ydata_profiling',       'YData-Profiling (Minimal)',   'x',  ':', '#999999', 2.0),
+    ('pdq_drift',             'PyDataQuality (Drift)',       'v',  '-.', '#555555', 1.5),
+    ('evidently_drift',       'Evidently (DataDriftPreset)', 'D',  '-',  '#111111', 1.5)
 ]
 
 for key, label, marker, ls, color, lw in styles:
-    ax1.plot(scales, results[key]['time'],   marker=marker, linestyle=ls,
-             color=color, linewidth=lw, label=label, markersize=7)
-    ax2.plot(scales, results[key]['memory'], marker=marker, linestyle=ls,
-             color=color, linewidth=lw, label=label, markersize=7)
+    if key not in results or len(results[key]['time']) == 0:
+        continue
+        
+    ax1.errorbar(scales, results[key]['time'], yerr=results[key]['time_std'], 
+                 marker=marker, linestyle=ls, color=color, linewidth=lw, label=label, markersize=7, capsize=3)
+    ax2.errorbar(scales, results[key]['memory'], yerr=results[key]['memory_std'], 
+                 marker=marker, linestyle=ls, color=color, linewidth=lw, label=label, markersize=7, capsize=3)
 
 for ax, title, ylabel in [
     (ax1, 'Execution Time Complexity', 'Execution Time (Seconds)'),
@@ -42,7 +47,7 @@ for ax, title, ylabel in [
     ax.set_xlabel('Dataset Size (Rows)')
     ax.set_ylabel(ylabel)
     ax.grid(True, linestyle=':', alpha=0.5, color='gray')
-    ax.legend(framealpha=0.9, edgecolor='black')
+    ax.legend(framealpha=0.9, edgecolor='black', fontsize=9)
     ax.set_facecolor('white')
     ax.spines[['top', 'right']].set_visible(False)
 

@@ -38,6 +38,11 @@
       "ks_p_value": 2.3272103764277238e-212
     }
   ],
+  "psi_skewed_sensitivity": {
+    "psi": 0.018403147151606875,
+    "ks_statistic": 0.046,
+    "ks_p_value": 0.24068202486600215
+  },
   "problematic_rows": {
     "total_rows": 12,
     "age_outlier_rows": 2,

@@ -68,6 +68,25 @@ for name, comp in scenarios:
     drift_grid.append({'scenario': name, 'psi': psi, 'classification': cls,
                        'ks_statistic': ks['statistic'], 'ks_p_value': ks['p_value']})
 
+# ─── PSI Bin Sensitivity (Skewed Data) ───────────────────────────────────────
+print("\n=== PSI Bin Sensitivity on Skewed Data ===")
+# Generate a highly skewed (power-law) distribution
+ref_skewed = pd.DataFrame({'value': np.random.pareto(a=2, size=1000) * 100})
+# A slight shift in the tail, but mostly similar
+curr_skewed = pd.DataFrame({'value': np.random.pareto(a=1.8, size=1000) * 100})
+
+a_ref_skewed = pdq.analyze_dataframe(ref_skewed, name='Ref_Skewed')
+a_curr_skewed = pdq.analyze_dataframe(curr_skewed, name='Curr_Skewed')
+
+comp_skewed = DataQualityComparator(a_ref_skewed, a_curr_skewed)
+psi_skewed = comp_skewed.calculate_psi('value')
+ks_skewed = comp_skewed.calculate_ks('value')
+
+print(f"Skewed Data PSI: {psi_skewed:.6f}")
+print(f"Skewed Data KS : {ks_skewed['statistic']:.4f} (p={ks_skewed['p_value']:.2e})")
+print("Note: PSI may exhibit high sensitivity (false positives or calculation artifacts) on highly skewed data due to binning instability.")
+
+
 # ─── get_problematic_rows Demo ───────────────────────────────────────────────
 df_demo = pd.DataFrame({
     'age':    [25, 30, 28, -100, 27, 999, 32, 29, 31, 26, 28, 30],
@@ -99,6 +118,11 @@ results = {
         'outliers': outliers.tolist()
     },
     'drift_grid': drift_grid,
+    'psi_skewed_sensitivity': {
+        'psi': psi_skewed,
+        'ks_statistic': ks_skewed['statistic'],
+        'ks_p_value': ks_skewed['p_value']
+    },
     'problematic_rows': {
         'total_rows': len(df_demo),
         'age_outlier_rows': len(prob_age_rows),

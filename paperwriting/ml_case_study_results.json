@@ -20,15 +20,6 @@
     },
     "drift_metrics": [
       {
-        "column": "age",
-        "dtype": "float64",
-        "psi": 0.010852154791883171,
-        "drift_status": "stable",
-        "pct_change": 53.79242320095435,
-        "ks_statistic": 0.0436,
-        "ks_p_value": 0.0825111521929306
-      },
-      {
         "column": "income",
         "dtype": "float64",
         "psi": 0.013765720342902858,
@@ -38,13 +29,13 @@
         "ks_p_value": 0.36532263545994736
       },
       {
-        "column": "approved",
-        "dtype": "int64",
-        "psi": 0.0,
+        "column": "age",
+        "dtype": "float64",
+        "psi": 0.010852154791883171,
         "drift_status": "stable",
-        "pct_change": 0.8230452674896974,
-        "ks_statistic": 0.0048,
-        "ks_p_value": 1.0
+        "pct_change": 53.79242320095435,
+        "ks_statistic": 0.0436,
+        "ks_p_value": 0.0825111521929306
       },
       {
         "column": "debt_ratio",
@@ -54,6 +45,15 @@
         "pct_change": -0.4744224299925582,
         "ks_statistic": 0.024,
         "ks_p_value": 0.7169363595395083
+      },
+      {
+        "column": "approved",
+        "dtype": "int64",
+        "psi": 0.0,
+        "drift_status": "stable",
+        "pct_change": 0.8230452674896974,
+        "ks_statistic": 0.0048,
+        "ks_p_value": 1.0
       },
       {
         "column": "credit_score",
@@ -81,31 +81,13 @@
     },
     "drift_metrics": [
       {
-        "column": "Population",
+        "column": "Latitude",
         "dtype": "float64",
-        "psi": 0.008206180892794816,
+        "psi": 0.009863179645346115,
         "drift_status": "stable",
-        "pct_change": -2.880343983344298,
-        "ks_statistic": 0.0348,
-        "ks_p_value": 0.2611019728782705
-      },
-      {
-        "column": "MedInc",
-        "dtype": "float64",
-        "psi": 4.1378604469534555,
-        "drift_status": "significant",
-        "pct_change": 105.50728226942591,
-        "ks_statistic": 0.6892,
-        "ks_p_value": 2.22e-321
-      },
-      {
-        "column": "MedHouseVal",
-        "dtype": "float64",
-        "psi": 0.015765014583532248,
-        "drift_status": "stable",
-        "pct_change": 2.4742149528686554,
-        "ks_statistic": 0.0392,
-        "ks_p_value": 0.15170739597900856
+        "pct_change": 0.042016761855372356,
+        "ks_statistic": 0.0248,
+        "ks_p_value": 0.6782919151382233
       },
       {
         "column": "AveOccup",
@@ -117,6 +99,24 @@
         "ks_p_value": 0.97384135130754
       },
       {
+        "column": "Longitude",
+        "dtype": "float64",
+        "psi": 0.013829674401385682,
+        "drift_status": "stable",
+        "pct_change": 0.05831579466984571,
+        "ks_statistic": 0.0334,
+        "ks_p_value": 0.3059174906288232
+      },
+      {
+        "column": "Population",
+        "dtype": "float64",
+        "psi": 0.008206180892794816,
+        "drift_status": "stable",
+        "pct_change": -2.880343983344298,
+        "ks_statistic": 0.0348,
+        "ks_p_value": 0.2611019728782705
+      },
+      {
         "column": "HouseAge",
         "dtype": "float64",
         "psi": 0.025584478111927666,
@@ -126,22 +126,22 @@
         "ks_p_value": 0.8858225346590899
       },
       {
-        "column": "Latitude",
+        "column": "MedHouseVal",
         "dtype": "float64",
-        "psi": 0.009863179645346115,
+        "psi": 0.015765014583532248,
         "drift_status": "stable",
-        "pct_change": 0.042016761855372356,
-        "ks_statistic": 0.0248,
-        "ks_p_value": 0.6782919151382233
+        "pct_change": 2.4742149528686554,
+        "ks_statistic": 0.0392,
+        "ks_p_value": 0.15170739597900856
       },
       {
-        "column": "Longitude",
+        "column": "AveBedrms",
         "dtype": "float64",
-        "psi": 0.013829674401385682,
+        "psi": 0.015571084659435915,
         "drift_status": "stable",
-        "pct_change": 0.05831579466984571,
-        "ks_statistic": 0.0334,
-        "ks_p_value": 0.3059174906288232
+        "pct_change": -1.1956908658037633,
+        "ks_statistic": 0.0256,
+        "ks_p_value": 0.6393530220960372
       },
       {
         "column": "AveRooms",
@@ -153,13 +153,13 @@
         "ks_p_value": 0.03238888819452406
       },
       {
-        "column": "AveBedrms",
+        "column": "MedInc",
         "dtype": "float64",
-        "psi": 0.015571084659435915,
-        "drift_status": "stable",
-        "pct_change": -1.1956908658037633,
-        "ks_statistic": 0.0256,
-        "ks_p_value": 0.6393530220960372
+        "psi": 4.1378604469534555,
+        "drift_status": "significant",
+        "pct_change": 105.50728226942591,
+        "ks_statistic": 0.6892,
+        "ks_p_value": 2.22e-321
       }
     ]
   }

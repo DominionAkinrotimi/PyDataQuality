@@ -349,7 +349,7 @@ shifts in borrower score distributions between model development and
 deployment. It has since become a standard metric in MLOps pipelines
 (Klaise et al., 2020). The PSI's primary advantage is its
 interpretability, as its industry-standard thresholds (\textless{} 0.1:
-stable; 0.1--0.25: moderate; ≥ 0.25: significant) provide immediately
+stable; 0.1--0.25: moderate; $\geq$ 0.25: significant) provide immediately
 actionable severity classifications.
 
 The Kolmogorov-Smirnov (KS) two-sample test (Kolmogorov, 1933; Smirnov,
@@ -426,7 +426,7 @@ single well-defined responsibility:
 \caption{Figure 2: PyDataQuality Architecture Stack. System architecture
 diagram illustrating the 5-layer decoupled design of PyDataQuality. Data
 flows from ingestion through an
-\pandocbounded{\includegraphics[keepaspectratio]{latex_media/media/image3.png}}-capped
+$O(1)$-capped
 sampling engine, into a core profiling kernel, optionally through a
 drift \& decision engine, and finally to the presentation layer for
 dashboarding and AI remediation generation.}\tabularnewline
@@ -898,10 +898,10 @@ is registered as a \texttt{QualityIssue} with
 
 \begin{itemize}
 \item
-  \texttt{severity="warning"} if the outlier percentage is \textless{}
+  \texttt{severity="warning"} if the outlier percentage is <
   10\% of the total non-null sample
 \item
-  \texttt{severity="critical"} if the outlier percentage is ≥ 10\% of
+  \texttt{severity="critical"} if the outlier percentage is $\geq$ 10\% of
   the total non-null sample
 \end{itemize}
 
@@ -1058,15 +1058,14 @@ Recommended Action
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-PSI \textless{} 0.10 & Stable & No action required \\
-0.10 ≤ PSI \textless{} 0.25 & Moderate Drift & Investigate root cause;
-monitor closely \\
-PSI ≥ 0.25 & Significant Drift & Halt inference; trigger model
+PSI < 0.10 & Stable & Proceed with normal processing \\
+0.10 < PSI < 0.25 & Moderate Drift & Issue warning; flag for human review \\
+PSI $\geq$ 0.25 & Significant Drift & Halt inference; trigger model
 retraining \\
 \end{longtable}
 }
 
-\pandocbounded{\includegraphics[keepaspectratio]{latex_media/media/image57.jpeg}}
+\includegraphics[keepaspectratio]{latex_media/media/image57.jpeg}
 
 Figure 7: Population Stability Index (PSI) drift severity classification
 scale.
@@ -1308,7 +1307,7 @@ The PSI and KS test are complementary, not redundant:
 
 A production-grade drift detection system should use both: a significant
 PSI combined with a highly significant KS p-value (p
-\textless\textless{} 0.05) provides strong evidence for real drift,
+<< 0.05) provides strong evidence for real drift,
 reducing false alarm rates from noise in small samples.
 
 \subsection{V. Experimental
@@ -1375,7 +1374,7 @@ df = pd.DataFrame(data)
 
 \# Inject missing salary values for low earners
 
-df.loc{[}df{[}\textquotesingle salary\textquotesingle{]} \textless{}
+df.loc{[}df{[}\textquotesingle salary\textquotesingle{]} <
 30000, \textquotesingle salary\textquotesingle{]} = np.nan
 
 return df
@@ -1450,7 +1449,7 @@ Evidently AI (DataDrift)
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 0\tabcolsep) * \real{0.0029}}@{}}
-\caption{\pandocbounded{\includegraphics[keepaspectratio]{latex_media/media/image80.png}}}\tabularnewline
+\caption{\includegraphics[keepaspectratio]{latex_media/media/image80.png}}\tabularnewline
 \toprule\noalign{}
 \endfirsthead
 \endhead
@@ -1633,7 +1632,7 @@ debt ratio}
 
 \emph{approval\_prob = 1 / (1 + np.exp(-10 * (score - 0.2)))}
 
-\emph{approved = (np.random.rand(rows) \textless{}
+\emph{approved = (np.random.rand(rows) < 
 approval\_prob).astype(int)}
 
 Features: \texttt{credit\_score} \textasciitilde{} N(680, 50),
@@ -1739,7 +1738,7 @@ across two drift scenarios. Left: Synthetic Loan Dataset
 \pandocbounded{\includegraphics[keepaspectratio]{latex_media/media/image82.png}}).
 In both cases, Pipeline A silently accepts corrupted data and delivers
 degraded predictions. Pipeline B intercepts the data, flags the severe
-distribution shifts (PSI \textgreater{} 3.0), raises an engineering
+distribution shifts (PSI > 3.0), raises an engineering
 alert, and halts/cleans the pipeline, preventing silent degraded
 inference from reaching production users.
 
@@ -2320,7 +2319,7 @@ data ingestion pipelines: a silent \textbf{9.8-percentage-point accuracy
 drop} in a loan approval model following a 120-point credit score
 distribution shift, with no alert raised by the baseline pipeline.
 PyDataQuality's drift gate correctly identified this shift with PSI =
-3.5517 and KS p-value \textless{} 10⁻³²¹ providing unambiguous evidence
+3.5517 and KS p-value < 10⁻³²¹ providing unambiguous evidence
 for retraining before degraded predictions reach end users.
 
 The library is available as open-source software
@@ -2332,7 +2331,7 @@ data quality a first-class, automated concern in their pipelines,
 embodying the core principle of Data-Centric AI: that the most impactful
 investment in AI reliability is often not in the model, but in the data.
 
-\textbf{IX. References}
+\subsection{IX. References}\label{ix.-references}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -2433,7 +2432,8 @@ investment in AI reliability is often not in the model, but in the data.
   arXiv:2601.17058}.
 \end{enumerate}
 
-Appendix A: Full API Reference Summary
+\subsection{Appendix A: Full API Reference
+Summary}\label{appendix-a-full-api-reference-summary}
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -2488,9 +2488,8 @@ groups \\
 
 \textbf{Table A1: Complete PyDataQuality Public API}
 
-\subsection{\texorpdfstring{\hfill\break
-Appendix B: Installation and Minimum Working
-Example}{ Appendix B: Installation and Minimum Working Example}}\label{appendix-b-installation-and-minimum-working-example}
+\subsection{Appendix B: Installation and Minimum Working
+Example}\label{appendix-b-installation-and-minimum-working-example}
 
 \textbf{Installation:}
 
@@ -2528,8 +2527,10 @@ new\_analyzer = pdq.analyze\_dataframe(df\_new, name="Production")
 drift\_report = pdq.compare\_drift(train\_analyzer, new\_analyzer)
 print(drift\_report{[}{[}column, psi, drift\_status{]}{]})
 
-\textbf{Requirements:} Python ≥ 3.8, pandas ≥ 1.3, numpy ≥ 1.21,
-matplotlib ≥ 3.4, Jinja2 ≥ 3.0. Optional: scipy (for exact KS test),
+\subsection{VIII. Availability}\label{viii.-availability}
+
+\textbf{Requirements:} Python $\geq$ 3.8, pandas $\geq$ 1.3, numpy $\geq$ 1.21,
+matplotlib $\geq$ 3.4, Jinja2 $\geq$ 3.0. Optional: scipy (for exact KS test),
 scikit-learn (for MLOps case study scripts), psutil (for memory
 benchmarking).
 

@@ -1,0 +1,46 @@
+{
+  "entropy": {
+    "skewed_50_30_20": 1.4854752972273344,
+    "near_uniform_33_33_34": 1.58481870497303,
+    "binary_50_50": 1.0
+  },
+  "iqr_demo": {
+    "Q1": 14.25,
+    "Q3": 21.5,
+    "IQR": 7.25,
+    "lower_fence": 3.375,
+    "upper_fence": 32.375,
+    "outliers": [
+      100,
+      200
+    ]
+  },
+  "drift_grid": [
+    {
+      "scenario": "Stable (~2pt diff)",
+      "psi": 0.021496452250786495,
+      "classification": "stable",
+      "ks_statistic": 0.076,
+      "ks_p_value": 0.04177637251461382
+    },
+    {
+      "scenario": "Moderate (~60pt diff)",
+      "psi": 0.7020227093387337,
+      "classification": "significant",
+      "ks_statistic": 0.404,
+      "ks_p_value": 4.079578540928367e-49
+    },
+    {
+      "scenario": "Severe (~120pt diff)",
+      "psi": 4.605623816560431,
+      "classification": "significant",
+      "ks_statistic": 0.796,
+      "ks_p_value": 2.3272103764277238e-212
+    }
+  ],
+  "problematic_rows": {
+    "total_rows": 12,
+    "age_outlier_rows": 2,
+    "income_missing_rows": 2
+  }
+}

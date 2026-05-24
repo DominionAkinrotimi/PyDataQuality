@@ -1,0 +1,67 @@
+{
+  "baseline": {
+    "accuracy": 0.626,
+    "precision": 0.6498516320474778,
+    "recall": 0.7604166666666666,
+    "f1": 0.7008
+  },
+  "pipeline_a_dirty": {
+    "accuracy": 0.528,
+    "precision": 0.8085106382978723,
+    "recall": 0.2585034013605442,
+    "f1": 0.3917525773195876
+  },
+  "pipeline_b_cleaned": {
+    "accuracy": 0.529,
+    "precision": 0.8128342245989305,
+    "recall": 0.2585034013605442,
+    "f1": 0.39225806451612905
+  },
+  "drift_metrics": [
+    {
+      "column": "debt_ratio",
+      "dtype": "float64",
+      "psi": 0.008631000354621783,
+      "drift_status": "stable",
+      "pct_change": -0.4744224299925582,
+      "ks_statistic": 0.024,
+      "ks_p_value": 0.7169363595395083
+    },
+    {
+      "column": "credit_score",
+      "dtype": "float64",
+      "psi": 3.551736912252174,
+      "drift_status": "significant",
+      "pct_change": -17.806902904275386,
+      "ks_statistic": 0.774,
+      "ks_p_value": 1.01e-321
+    },
+    {
+      "column": "age",
+      "dtype": "float64",
+      "psi": 0.010852154791883171,
+      "drift_status": "stable",
+      "pct_change": 53.79242320095435,
+      "ks_statistic": 0.0436,
+      "ks_p_value": 0.0825111521929306
+    },
+    {
+      "column": "approved",
+      "dtype": "int64",
+      "psi": 0.0,
+      "drift_status": "stable",
+      "pct_change": 0.8230452674896974,
+      "ks_statistic": 0.0048,
+      "ks_p_value": 1.0
+    },
+    {
+      "column": "income",
+      "dtype": "float64",
+      "psi": 0.013765720342902858,
+      "drift_status": "stable",
+      "pct_change": 0.7789697794212522,
+      "ks_statistic": 0.033701974448315915,
+      "ks_p_value": 0.36532263545994736
+    }
+  ]
+}

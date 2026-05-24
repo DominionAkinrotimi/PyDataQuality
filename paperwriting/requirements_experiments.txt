@@ -1,0 +1,15 @@
+# Requirements for reproducing the paper experiments
+# Install with: pip install -r paperwriting/requirements_experiments.txt
+#
+# Core library (choose one):
+#   pip install pydataquality==0.1.0        (from PyPI)
+#   pip install -e .                         (from source, repo root)
+#
+# Experiment dependencies:
+ydata-profiling==4.18.4
+scikit-learn==1.7.2
+psutil==7.2.2
+scipy==1.15.3
+matplotlib==3.10.0
+numpy==2.2.6
+pandas==2.3.3

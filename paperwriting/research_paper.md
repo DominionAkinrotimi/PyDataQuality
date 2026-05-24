@@ -130,47 +130,9 @@ PyDataQuality was designed around five explicit architectural principles that di
 
 PyDataQuality is organized into five decoupled layers, each with a single well-defined responsibility:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        INGESTION LAYER                          │
-│   CLI Auto-Loader (CSV/Excel/JSON/Parquet)                      │
-│   API Wrappers: analyze_dataframe(), quick_quality_check()      │
-└───────────────────────────────┬─────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        SAMPLING ENGINE                          │
-│   sample_dataframe()   — In-Memory Stratified/Random Sampler    │
-│   sample_large_dataset() — Chunk-Based File Sampler (OOM-Safe)  │
-└───────────────────────────────┬─────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    CORE PROFILING KERNEL                        │
-│   DataQualityAnalyzer — Type-dispatched column audits           │
-│   QualityIssue Registry — Structured severity issue objects     │
-│   ColumnStats Registry — Per-column statistical summaries       │
-└───────────────────────────────┬─────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    DRIFT & DECISION ENGINE                      │
-│   DataQualityComparator — Reference vs. Current comparison      │
-│   PSI Engine — Adaptive binning, information divergence         │
-│   KS Engine — ECDF comparison, SciPy or pure-NumPy backend      │
-└───────────────────────────────┬─────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     PRESENTATION LAYER                          │
-│   HTML Dashboards — 3 themes: professional, creative, simple    │
-│   Matplotlib Visuals — Missing heatmaps, outlier boxplots       │
-│   JSON / Text Report Generators                                 │
-│   AI Remediation Prompt Generator (LLM bridge)                  │
-└─────────────────────────────────────────────────────────────────┘
-```
+![Figure 1: PyDataQuality Architecture Stack](fig_architecture_bw.png)
 
-**Figure 1: PyDataQuality Five-Layer Architecture**
+**Figure 1:** System architecture diagram illustrating the 5-layer decoupled design of PyDataQuality. Data flows from ingestion through an $O(1)$-capped sampling engine, into a core profiling kernel, optionally through a drift & decision engine, and finally to the presentation layer for dashboarding and AI remediation generation.
 
 ---
 

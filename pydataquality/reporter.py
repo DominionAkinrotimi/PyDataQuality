@@ -17,68 +17,68 @@ class QualityReportGenerator:
     """
     Generate comprehensive reports from data quality analysis.
     """
-    
+
     def __init__(self, analyzer: DataQualityAnalyzer):
         self.analyzer = analyzer
 
     def generate_ai_remediation_prompt(self, include_eda: bool = True) -> str:
         """
         Generate an AI remediation prompt for fixing data quality issues.
-        
+
         This creates a prompt that can be copied to an AI assistant to get
         automated code for fixing the detected quality issues.
-        
+
         Parameters
         ----------
         include_eda : bool
             Whether to include statistical context (EDA) in the prompt.
-        
+
         Returns
         -------
         str
             AI remediation prompt text
         """
         summary = self.analyzer.get_summary()
-        
+
         prompt = f"I have a dataset '{self.analyzer.name}' with {summary['dataset']['rows']} rows. "
-        
+
         # Get critical and warning issues with DETAILS
         significant_issues = []
         affected_columns = set()
-        
+
         for issue in self.analyzer.issues:
-            if issue.severity in ['critical', 'warning']:
+            if issue.severity in ["critical", "warning"]:
                 affected_columns.add(issue.column)
                 # Basic description
                 desc = f"{issue.column} ({issue.issue_type}"
-                
+
                 # Add context based on details
                 details = []
-                if issue.issue_type == 'outliers' and issue.details:
-                    lower = issue.details.get('lower_bound')
-                    upper = issue.details.get('upper_bound')
+                if issue.issue_type == "outliers" and issue.details:
+                    lower = issue.details.get("lower_bound")
+                    upper = issue.details.get("upper_bound")
                     if lower is not None and upper is not None:
                         details.append(f"outside [{lower:.2f}, {upper:.2f}]")
-                        
-                elif issue.issue_type == 'missing_values':
+
+                elif issue.issue_type == "missing_values":
                     details.append(f"{issue.affected_percentage:.1f}% missing")
-                    
-                elif issue.issue_type == 'inconsistent_values' and issue.details:
-                    examples = issue.details.get('examples', [])
+
+                elif issue.issue_type == "inconsistent_values" and issue.details:
+                    examples = issue.details.get("examples", [])
                     if examples:
                         details.append(f"e.g., {', '.join(examples[:3])}")
-                
+
                 # Close description
                 if details:
                     desc += f": {'; '.join(details)})"
                 else:
                     desc += ")"
-                
+
                 significant_issues.append(desc)
-        
+
         if significant_issues:
             prompt += f"It has the following quality issues: {', '.join(significant_issues)}. "
-            
+
             # Inject EDA Context if requested
             if include_eda and affected_columns:
                 prompt += "\n\nHere is the statistical context (EDA) for the affected columns:\n"
@@ -86,10 +86,10 @@ class QualityReportGenerator:
                     if col in self.analyzer.column_stats:
                         stats = self.analyzer.column_stats[col]
                         prompt += f"- {col} ({stats.dtype}): "
-                        
+
                         # Add specific stats based on type
                         context = []
-                        if 'mean' in stats.stats:
+                        if "mean" in stats.stats:
                             context.append(f"Mean={stats.stats['mean']:.2f}")
                             context.append(f"Median={stats.stats.get('median', 0):.2f}")
                             context.append(f"Min={stats.stats.get('min', 0):.2f}")
@@ -97,106 +97,135 @@ class QualityReportGenerator:
                         else:
                             # Categorical / Object stats
                             context.append(f"Unique Values={stats.unique_count}")
-                            if 'most_common' in stats.stats:
-                                context.append(f"Top Value='{stats.stats['most_common']}'")
-                                
+                            if "most_common" in stats.stats:
+                                context.append(
+                                    f"Top Value='{stats.stats['most_common']}'"
+                                )
+
                         prompt += ", ".join(context) + "\n"
-            
-            prompt += "\nPlease write a Python script using pandas to clean this dataset. "
+
+            prompt += (
+                "\nPlease write a Python script using pandas to clean this dataset. "
+            )
             prompt += "Consider different strategies (e.g., capping vs removal for outliers, imputation vs dropping for missing) "
             prompt += "based on the logic and EDA context provided above. Provide a brief explanation of your chosen strategy."
         else:
             prompt += "The data quality appears good, but I'd like to optimize it further. Please suggest improvements."
-        
+
         return prompt
-       
+
     def generate_text_report(self) -> str:
         """
         Generate a detailed text report.
-        
+
         Returns
         -------
         str
             Formatted text report
         """
         summary = self.analyzer.get_summary()
-        
+
         report_lines = []
         report_lines.append("=" * 80)
         report_lines.append(f"DATA QUALITY ANALYSIS REPORT")
         report_lines.append(f"Dataset: {self.analyzer.name}")
-        report_lines.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report_lines.append(
+            f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
         report_lines.append("=" * 80)
-        
+
         # Dataset Overview
         report_lines.append("\nDATASET OVERVIEW")
         report_lines.append("-" * 40)
         report_lines.append(f"Rows: {summary['dataset']['rows']:,}")
         report_lines.append(f"Columns: {summary['columns']:,}")
         report_lines.append(f"Total Cells: {summary['dataset']['total_cells']:,}")
-        report_lines.append(f"Memory Usage: {summary['dataset']['memory_usage_mb']:.2f} MB")
-        
+        report_lines.append(
+            f"Memory Usage: {summary['dataset']['memory_usage_mb']:.2f} MB"
+        )
+
         # Column Types Summary
         report_lines.append("\nCOLUMN TYPES")
         report_lines.append("-" * 40)
-        for dtype, count in summary['column_types'].items():
+        for dtype, count in summary["column_types"].items():
             report_lines.append(f"{dtype.title()}: {count}")
-        
+
         # Issues Summary
         report_lines.append("\nISSUES SUMMARY")
         report_lines.append("-" * 40)
-        severity_counts = summary['issues_by_severity']
+        severity_counts = summary["issues_by_severity"]
         report_lines.append(f"Critical Issues: {severity_counts.get('critical', 0)}")
         report_lines.append(f"Warning Issues: {severity_counts.get('warning', 0)}")
         report_lines.append(f"Informational Issues: {severity_counts.get('info', 0)}")
-        
-        if severity_counts.get('critical', 0) + severity_counts.get('warning', 0) > 0:
+
+        if severity_counts.get("critical", 0) + severity_counts.get("warning", 0) > 0:
             report_lines.append("\nDETAILED ISSUES")
             report_lines.append("-" * 40)
-            
+
             # Group issues by column
             issues_by_column = {}
             for issue in self.analyzer.issues:
-                if issue.severity in ['critical', 'warning']:
+                if issue.severity in ["critical", "warning"]:
                     if issue.column not in issues_by_column:
                         issues_by_column[issue.column] = []
                     issues_by_column[issue.column].append(issue)
-            
+
             for column, issues in issues_by_column.items():
                 report_lines.append(f"\n{column}:")
                 for issue in issues:
-                    report_lines.append(f"  [{issue.severity.upper()}] {issue.issue_type}")
+                    report_lines.append(
+                        f"  [{issue.severity.upper()}] {issue.issue_type}"
+                    )
                     report_lines.append(f"      {issue.message}")
                     if issue.affected_count > 0:
-                        report_lines.append(f"      Affected: {issue.affected_count} ({issue.affected_percentage:.1f}%)")
+                        report_lines.append(
+                            f"      Affected: {issue.affected_count} ({issue.affected_percentage:.1f}%)"
+                        )
                     # Show details if available
                     if issue.details:
-                        if 'examples' in issue.details:
-                            report_lines.append(f"      Examples: {', '.join(issue.details['examples'][:3])}")
-                        if 'outlier_examples' in issue.details:
-                            examples = [str(x) for x in issue.details['outlier_examples']]
-                            report_lines.append(f"      Outlier examples: {', '.join(examples)}")
-        
+                        if "examples" in issue.details:
+                            report_lines.append(
+                                f"      Examples: {', '.join(issue.details['examples'][:3])}"
+                            )
+                        if "outlier_examples" in issue.details:
+                            examples = [
+                                str(x) for x in issue.details["outlier_examples"]
+                            ]
+                            report_lines.append(
+                                f"      Outlier examples: {', '.join(examples)}"
+                            )
+
         # Missing Data Overview
         report_lines.append("\nMISSING DATA OVERVIEW")
         report_lines.append("-" * 40)
-        missing_overview = summary['missing_data_overview']
-        report_lines.append(f"Columns with missing values: {missing_overview['columns_with_missing']}")
-        report_lines.append(f"Total missing cells: {missing_overview['total_missing_cells']:,}")
-        report_lines.append(f"Overall missing percentage: {missing_overview['total_missing_percentage']:.2f}%")
-        
-        if missing_overview['columns']:
+        missing_overview = summary["missing_data_overview"]
+        report_lines.append(
+            f"Columns with missing values: {missing_overview['columns_with_missing']}"
+        )
+        report_lines.append(
+            f"Total missing cells: {missing_overview['total_missing_cells']:,}"
+        )
+        report_lines.append(
+            f"Overall missing percentage: {missing_overview['total_missing_percentage']:.2f}%"
+        )
+
+        if missing_overview["columns"]:
             report_lines.append("\nTop columns with missing values:")
-            for col_data in missing_overview['columns']:
-                report_lines.append(f"  {col_data['column']}: {col_data['missing_count']:,} ({col_data['missing_percentage']:.1f}%)")
-        
+            for col_data in missing_overview["columns"]:
+                report_lines.append(
+                    f"  {col_data['column']}: {col_data['missing_count']:,} ({col_data['missing_percentage']:.1f}%)"
+                )
+
         # Column Statistics Summary
         report_lines.append("\nCOLUMN STATISTICS SUMMARY")
         report_lines.append("-" * 40)
-        
-        numeric_cols = [col for col, stats in self.analyzer.column_stats.items() 
-                       if 'mean' in stats.stats]
-        
+
+        numeric_cols = [
+            col
+            for col, stats in self.analyzer.column_stats.items()
+            if "mean" in stats.stats
+        ]
+
         if numeric_cols:
             report_lines.append("\nNumeric Columns:")
             for col in numeric_cols[:5]:  # Show first 5
@@ -206,14 +235,21 @@ class QualityReportGenerator:
                 report_lines.append(f"    Missing: {stats.missing_percentage:.1f}%")
                 report_lines.append(f"    Mean: {stats.stats.get('mean', 0):.4f}")
                 report_lines.append(f"    Std: {stats.stats.get('std', 0):.4f}")
-                report_lines.append(f"    Range: [{stats.stats.get('min', 0):.4f}, {stats.stats.get('max', 0):.4f}]")
-            
+                report_lines.append(
+                    f"    Range: [{stats.stats.get('min', 0):.4f}, {stats.stats.get('max', 0):.4f}]"
+                )
+
             if len(numeric_cols) > 5:
-                report_lines.append(f"\n  ... and {len(numeric_cols) - 5} more numeric columns")
-        
-        categorical_cols = [col for col, stats in self.analyzer.column_stats.items() 
-                          if 'value_counts' in stats.stats]
-        
+                report_lines.append(
+                    f"\n  ... and {len(numeric_cols) - 5} more numeric columns"
+                )
+
+        categorical_cols = [
+            col
+            for col, stats in self.analyzer.column_stats.items()
+            if "value_counts" in stats.stats
+        ]
+
         if categorical_cols:
             report_lines.append("\nCategorical Columns:")
             for col in categorical_cols[:3]:  # Show first 3
@@ -222,154 +258,181 @@ class QualityReportGenerator:
                 report_lines.append(f"    Type: {stats.dtype}")
                 report_lines.append(f"    Missing: {stats.missing_percentage:.1f}%")
                 report_lines.append(f"    Unique values: {stats.unique_count}")
-                if 'most_common' in stats.stats:
-                    report_lines.append(f"    Most common: '{stats.stats['most_common']}' ({stats.stats['most_common_percentage']:.1f}%)")
-            
+                if "most_common" in stats.stats:
+                    report_lines.append(
+                        f"    Most common: '{stats.stats['most_common']}' ({stats.stats['most_common_percentage']:.1f}%)"
+                    )
+
             if len(categorical_cols) > 3:
-                report_lines.append(f"\n  ... and {len(categorical_cols) - 3} more categorical columns")
-        
+                report_lines.append(
+                    f"\n  ... and {len(categorical_cols) - 3} more categorical columns"
+                )
+
         # Recommendations
         report_lines.append("\nRECOMMENDATIONS")
         report_lines.append("-" * 40)
-        
+
         recommendations = []
-        
+
         # Check for critical issues
-        if severity_counts.get('critical', 0) > 0:
-            recommendations.append("Address critical issues before proceeding with analysis.")
-        
+        if severity_counts.get("critical", 0) > 0:
+            recommendations.append(
+                "Address critical issues before proceeding with analysis."
+            )
+
         # Check for high missing values
-        if missing_overview['total_missing_percentage'] > 20:
-            recommendations.append("Consider data imputation or investigate sources of missing data.")
-        elif missing_overview['total_missing_percentage'] > 5:
-            recommendations.append("Review missing data patterns and consider appropriate handling methods.")
-        
+        if missing_overview["total_missing_percentage"] > 20:
+            recommendations.append(
+                "Consider data imputation or investigate sources of missing data."
+            )
+        elif missing_overview["total_missing_percentage"] > 5:
+            recommendations.append(
+                "Review missing data patterns and consider appropriate handling methods."
+            )
+
         # Check for skewed distributions
         skewed_cols = []
         for col, stats in self.analyzer.column_stats.items():
-            if 'skew' in stats.stats and abs(stats.stats['skew']) > 1.5:
+            if "skew" in stats.stats and abs(stats.stats["skew"]) > 1.5:
                 skewed_cols.append(col)
-        
+
         if skewed_cols:
-            recommendations.append(f"Consider transformation for skewed columns: {', '.join(skewed_cols[:3])}")
-        
+            recommendations.append(
+                f"Consider transformation for skewed columns: {', '.join(skewed_cols[:3])}"
+            )
+
         if not recommendations:
             recommendations.append("Data quality appears good. Proceed with analysis.")
-        
+
         for i, rec in enumerate(recommendations, 1):
             report_lines.append(f"{i}. {rec}")
-        
+
         report_lines.append("\n" + "=" * 80)
         report_lines.append("END OF REPORT")
         report_lines.append("=" * 80)
-        
+
         return "\n".join(report_lines)
-    
-    def generate_html_report(self, include_visuals: bool = False, theme: str = 'creative') -> str:
+
+    def generate_html_report(
+        self, include_visuals: bool = False, theme: str = "creative"
+    ) -> str:
         """
         Generate an HTML report.
-        
+
         Parameters
         ----------
         include_visuals : bool
             Whether to include base64-encoded visualizations
         theme : str
             Report theme ('creative', 'professional', 'simple')
-            
+
         Returns
         -------
         str
             HTML report as string
         """
         from jinja2 import Environment
-        
+
         summary = self.analyzer.get_summary()
-        
+
         # Select template based on theme
-        if theme == 'creative':
+        if theme == "creative":
             html_template = self._get_creative_template()
-        elif theme == 'professional':
+        elif theme == "professional":
             html_template = self._get_professional_template()
         else:
             html_template = self._get_simple_template()
-        
+
         # Prepare data for template
         template_data = {
-            'dataset_name': self.analyzer.name,
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'summary': summary,
-            'issues': self.analyzer.issues,
-            'missing_overview': summary['missing_data_overview'],
-            'column_types': summary['column_types'],
-            'visuals_base64': None,
+            "dataset_name": self.analyzer.name,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "summary": summary,
+            "issues": self.analyzer.issues,
+            "missing_overview": summary["missing_data_overview"],
+            "column_types": summary["column_types"],
+            "visuals_base64": None,
         }
-        
+
         # Add recommendations
         recommendations = []
-        severity_counts = summary['issues_by_severity']
-        
-        if severity_counts.get('critical', 0) > 0:
-            recommendations.append("Address critical issues before proceeding with analysis.")
-        
-        missing_overview = summary['missing_data_overview']
-        if missing_overview['total_missing_percentage'] > 20:
-            recommendations.append("High percentage of missing data. Consider data imputation or investigate data sources.")
-        elif missing_overview['total_missing_percentage'] > 5:
-            recommendations.append("Moderate missing data. Review patterns and consider appropriate handling methods.")
-        
+        severity_counts = summary["issues_by_severity"]
+
+        if severity_counts.get("critical", 0) > 0:
+            recommendations.append(
+                "Address critical issues before proceeding with analysis."
+            )
+
+        missing_overview = summary["missing_data_overview"]
+        if missing_overview["total_missing_percentage"] > 20:
+            recommendations.append(
+                "High percentage of missing data. Consider data imputation or investigate data sources."
+            )
+        elif missing_overview["total_missing_percentage"] > 5:
+            recommendations.append(
+                "Moderate missing data. Review patterns and consider appropriate handling methods."
+            )
+
         # Check for skewed distributions
         skewed_cols = []
         for col, stats in self.analyzer.column_stats.items():
-            if 'skew' in stats.stats and abs(stats.stats['skew']) > 1.5:
+            if "skew" in stats.stats and abs(stats.stats["skew"]) > 1.5:
                 skewed_cols.append(col)
-        
+
         if skewed_cols:
-            col_list = ', '.join(skewed_cols[:3])
+            col_list = ", ".join(skewed_cols[:3])
             if len(skewed_cols) > 3:
-                col_list += f' and {len(skewed_cols) - 3} more'
-            recommendations.append(f"Consider transformation for skewed columns: {col_list}")
-            
+                col_list += f" and {len(skewed_cols) - 3} more"
+            recommendations.append(
+                f"Consider transformation for skewed columns: {col_list}"
+            )
+
         # Gap 4: Auto-Fix / AI Suggestions (Heuristic)
-        if summary['issues_by_severity']['critical'] > 0:
+        if summary["issues_by_severity"]["critical"] > 0:
             recommendations.append("<b>Auto-Fix Suggestions:</b>")
-            for issue in summary.get('issues', []):
-                if issue.severity == 'critical':
-                    if issue.issue_type == 'missing_values':
-                        recommendations.append(f"• Column '{issue.column}': Impute with mean/median or drop if > 50% missing.")
-                    elif issue.issue_type == 'outliers':
-                        recommendations.append(f"• Column '{issue.column}': Cap values at 1.5*IQR or use robust scaling.")
-            
-            
+            for issue in summary.get("issues", []):
+                if issue.severity == "critical":
+                    if issue.issue_type == "missing_values":
+                        recommendations.append(
+                            f"• Column '{issue.column}': Impute with mean/median or drop if > 50% missing."
+                        )
+                    elif issue.issue_type == "outliers":
+                        recommendations.append(
+                            f"• Column '{issue.column}': Cap values at 1.5*IQR or use robust scaling."
+                        )
+
         if not recommendations:
-            recommendations.append("Data quality appears good. No specific actions required at this time.")
-        
-        template_data['recommendations'] = recommendations
-        
+            recommendations.append(
+                "Data quality appears good. No specific actions required at this time."
+            )
+
+        template_data["recommendations"] = recommendations
+
         # Custom filters
         def comma_filter(value):
             return f"{value:,}"
-        
+
         def int_filter(value):
             try:
                 return int(value)
             except (ValueError, TypeError):
                 return 0
-        
+
         # Create environment with filters
         env = Environment()
-        env.filters['comma'] = comma_filter
-        env.filters['int'] = int_filter
-        
+        env.filters["comma"] = comma_filter
+        env.filters["int"] = int_filter
+
         # Create template from string
         template = env.from_string(html_template)
-        
+
         html_report = template.render(**template_data)
         return html_report
 
-    def save_report(self, output_path: str, format: str = 'html'):
+    def save_report(self, output_path: str, format: str = "html"):
         """
         Save report to file.
-        
+
         Parameters
         ----------
         output_path : str
@@ -377,27 +440,27 @@ class QualityReportGenerator:
         format : str
             Report format ('html', 'text', 'json')
         """
-        if format == 'html':
+        if format == "html":
             report = self.generate_html_report()
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 f.write(report)
-        elif format == 'text':
+        elif format == "text":
             report = self.generate_text_report()
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 f.write(report)
-        elif format == 'json':
+        elif format == "json":
             summary = self.analyzer.get_summary()
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(summary, f, indent=2, default=str)
         else:
             raise ValueError(f"Unsupported format: {format}")
-        
-        print(f"Report saved to {output_path}")
-    def _get_creative_template(self) -> str:
 
+        print(f"Report saved to {output_path}")
+
+    def _get_creative_template(self) -> str:
         """Returns the creative/modern HTML template."""
 
-        return '''
+        return """
 
         <!DOCTYPE html>
 
@@ -965,15 +1028,12 @@ class QualityReportGenerator:
 
         </html>
 
-        '''
-
-
+        """
 
     def _get_professional_template(self) -> str:
-
         """Returns the professional/PDF-optimized HTML template."""
 
-        return '''
+        return """
 
         <!DOCTYPE html>
 
@@ -1251,15 +1311,12 @@ class QualityReportGenerator:
 
         </html>
 
-        '''
-
-
+        """
 
     def _get_simple_template(self) -> str:
-
         """Returns the original/simple HTML template."""
 
-        return '''
+        return """
 
         <!DOCTYPE html>
 
@@ -1995,5 +2052,4 @@ class QualityReportGenerator:
 
         </html>
 
-        '''
-        
+        """

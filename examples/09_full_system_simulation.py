@@ -85,7 +85,7 @@ def simulate_cli_user(csv_path):
     print("\n--- Persona C: CLI User ---")
     import subprocess
     
-    cmd = [sys.executable, "cli.py", csv_path, "--output", "cli_report.html"]
+    cmd = [sys.executable, "-m", "pydataquality", csv_path, "--output", "cli_report.html"]
     print(f"Running: {' '.join(cmd)}")
     
     result = subprocess.run(cmd, capture_output=True, text=True)

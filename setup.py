@@ -53,6 +53,11 @@ setup(
             "sphinx-rtd-theme>=1.0",
         ],
     },
+    entry_points={
+        "console_scripts": [
+            "pydataquality=pydataquality.cli:main",
+        ],
+    },
     keywords="data-quality, data-analysis, pandas, visualization",
     project_urls={
         "Bug Reports": "https://github.com/DominionAkinrotimi/pydataquality/issues",

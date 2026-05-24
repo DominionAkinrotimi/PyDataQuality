@@ -44,3 +44,6 @@ notebook = ["ipython>=7.0", "jupyter>=1.0"]
 Homepage = "https://github.com/DominionAkinrotimi/pydataquality"
 Bug-Tracker = "https://github.com/DominionAkinrotimi/pydataquality/issues"
 Source = "https://github.com/DominionAkinrotimi/pydataquality"
+
+[project.scripts]
+pydataquality = "pydataquality.cli:main"

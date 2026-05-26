@@ -31,7 +31,7 @@ setup(
     python_requires=">=3.7",
     install_requires=[
         "pandas>=1.3.0",
-        "numpy>=1.20.0",
+        "numpy>=1.21.0",
         "matplotlib>=3.4.0",
         "seaborn>=0.11.2",
         "jinja2>=3.0.0",

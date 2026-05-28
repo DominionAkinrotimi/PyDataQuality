@@ -156,11 +156,29 @@ python -m pydataquality data.csv --report html --theme professional
 python -m pydataquality data.csv --visualize
 ```
 
+## Research Paper
+
+PyDataQuality is backed by an academic paper that formally describes its architecture, mathematical foundations, and empirical benchmarks:
+
+> **PyDataQuality: An Actionable, Lightweight Data Profiling and Distribution Drift Detection Framework for Production Machine Learning Pipelines**
+> — Dominion Akinrotimi, 2026
+
+The paper covers:
+- The five-layer modular architecture
+- Formal derivations of Shannon Entropy, IQR (Tukey Fences), PSI, and the KS Test
+- Benchmark results showing ~80ms constant-time execution in sampled mode
+- An MLOps case study demonstrating drift detection as a model quality gate
+
+📄 [Read the Paper (PDF)](https://github.com/DominionAkinrotimi/PyDataQuality/blob/main/paperwriting/final%20paper%20in%20pdf/PyDataQuality.pdf)
+
+---
+
 ## Documentation
 
 - [Quickstart Guide](https://github.com/DominionAkinrotimi/pydataquality/blob/main/docs/quickstart.md)
 - [API Reference](https://github.com/DominionAkinrotimi/pydataquality/blob/main/docs/api.md)
 - [Examples](https://github.com/DominionAkinrotimi/pydataquality/blob/main/examples/)
+- [📚 Technical Study Guide](https://github.com/DominionAkinrotimi/PyDataQuality/blob/main/STUDY_GUIDE.md) — Deep dive into every concept, formula, and design decision behind the library
 
 ## Examples
 

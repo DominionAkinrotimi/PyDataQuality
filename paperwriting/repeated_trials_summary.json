@@ -1,0 +1,17 @@
+{
+  "n_trials": 30,
+  "baseline_acc_mean": 0.6440333333333332,
+  "baseline_acc_std": 0.011293829054516626,
+  "pipeline_a_acc_mean": 0.5295333333333334,
+  "pipeline_a_acc_std": 0.016683118317077576,
+  "pipeline_b_acc_mean": 0.5296,
+  "pipeline_b_acc_std": 0.016849434657455493,
+  "drop_pp_mean": 11.45,
+  "drop_pp_std": 1.6468883930947922,
+  "drop_pp_min": 7.800000000000007,
+  "drop_pp_max": 14.600000000000001,
+  "trials_with_drop": 30,
+  "credit_score_psi_mean": 4.076731887627543,
+  "credit_score_psi_std": 0.26553612199365473,
+  "credit_score_psi_min": 3.6673239928847146
+}

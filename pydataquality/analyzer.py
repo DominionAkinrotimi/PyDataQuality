@@ -60,6 +60,8 @@ class DataQualityAnalyzer:
 
         # Merge custom config with defaults
         self.config = QUALITY_THRESHOLDS.copy()
+        if isinstance(self.rules.get("thresholds"), dict):
+            self.config.update(self.rules["thresholds"])
         if config:
             self.config.update(config)
 
@@ -70,6 +72,8 @@ class DataQualityAnalyzer:
         # Initialize analysis
         self._analyze_dataset_structure()
         self._analyze_columns()
+        self._check_duplicate_rows()
+        self._apply_column_rules()
 
     def _analyze_dataset_structure(self):
         """Analyze basic dataset structure."""
@@ -111,9 +115,9 @@ class DataQualityAnalyzer:
         # Type-specific analysis
         if pd.api.types.is_numeric_dtype(col_data):
             self._analyze_numeric_column(col_data, stats)
-        elif pd.api.types.is_string_dtype(
-            col_data
-        ) or pd.api.types.is_categorical_dtype(col_data):
+        elif pd.api.types.is_string_dtype(col_data) or isinstance(
+            col_data.dtype, pd.CategoricalDtype
+        ):
             self._analyze_categorical_column(col_data, stats)
         elif pd.api.types.is_datetime64_any_dtype(col_data):
             self._analyze_datetime_column(col_data, stats)
@@ -418,6 +422,85 @@ class DataQualityAnalyzer:
                 )
             )
 
+    def _check_duplicate_rows(self):
+        """Flag rows that are exact copies of an earlier row."""
+        try:
+            duplicate_count = int(self.df.duplicated().sum())
+        except TypeError:
+            # Unhashable cell values (lists, dicts) cannot be compared
+            return
+        self.dataset_stats["duplicate_rows"] = duplicate_count
+        if duplicate_count > 0:
+            total = len(self.df)
+            self.issues.append(
+                QualityIssue(
+                    column="(all columns)",
+                    issue_type="duplicate_rows",
+                    severity="warning",
+                    message=f"Found {duplicate_count} duplicate rows (exact copies of another row)",
+                    affected_count=duplicate_count,
+                    affected_percentage=duplicate_count / total * 100 if total else 0,
+                )
+            )
+
+    def _rule_violation_mask(self, column: str) -> pd.Series:
+        """Boolean mask of rows that break the custom rules for a column."""
+        mask = pd.Series(False, index=self.df.index)
+        column_rules = (self.rules.get("column_rules") or {}).get(column) or {}
+        if column not in self.df.columns or not column_rules:
+            return mask
+
+        col_data = self.df[column]
+        present = col_data.notna()
+
+        if "min" in column_rules or "max" in column_rules:
+            numeric = pd.to_numeric(col_data, errors="coerce")
+            if "min" in column_rules:
+                mask |= present & (numeric < column_rules["min"])
+            if "max" in column_rules:
+                mask |= present & (numeric > column_rules["max"])
+        if "allowed_values" in column_rules:
+            mask |= present & ~col_data.isin(list(column_rules["allowed_values"]))
+        if column_rules.get("not_null"):
+            mask |= ~present
+        if column_rules.get("unique"):
+            mask |= present & col_data.duplicated(keep=False)
+        return mask
+
+    def _apply_column_rules(self):
+        """Evaluate custom per-column rules (``rules['column_rules']``)."""
+        column_rules = self.rules.get("column_rules") or {}
+        for column, rule in column_rules.items():
+            if column not in self.df.columns:
+                self.issues.append(
+                    QualityIssue(
+                        column=column,
+                        issue_type="rule_violation",
+                        severity="critical",
+                        message=f"Rules are defined for column '{column}' but it is not in the dataset",
+                    )
+                )
+                continue
+
+            mask = self._rule_violation_mask(column)
+            violations = int(mask.sum())
+            if violations > 0:
+                total = len(self.df)
+                self.issues.append(
+                    QualityIssue(
+                        column=column,
+                        issue_type="rule_violation",
+                        severity="critical",
+                        message=f"{violations} values break the custom rules for '{column}' ({rule})",
+                        affected_count=violations,
+                        affected_percentage=violations / total * 100 if total else 0,
+                        details={
+                            "rule": dict(rule),
+                            "examples": self.df.loc[mask, column].head(5).tolist(),
+                        },
+                    )
+                )
+
     def _calculate_entropy(self, series: pd.Series) -> float:
         """Calculate entropy of a categorical series."""
         value_counts = series.value_counts(normalize=True)
@@ -463,7 +546,11 @@ class DataQualityAnalyzer:
         dtype_str = str(dtype)
         if "int" in dtype_str or "float" in dtype_str:
             return "numeric"
-        elif "object" in dtype_str or "string" in dtype_str or "category" in dtype_str:
+        elif (
+            "object" in dtype_str
+            or "str" in dtype_str
+            or "category" in dtype_str
+        ):
             return "categorical"
         elif "datetime" in dtype_str:
             return "datetime"
@@ -544,7 +631,7 @@ class DataQualityAnalyzer:
         column : str
             Column name
         issue_type : str
-            Type of issue: 'missing_values', 'outliers', 'all'
+            Type of issue: 'missing_values', 'outliers', 'rule_violation', 'all'
 
         Returns
         -------
@@ -593,5 +680,9 @@ class DataQualityAnalyzer:
                 mask |= is_outlier
             except Exception:
                 pass
+
+        # Check custom rules
+        if issue_type in ["rule_violation", "all"]:
+            mask |= self._rule_violation_mask(column)
 
         return self.df[mask].copy()

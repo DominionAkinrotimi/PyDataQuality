@@ -1,8 +1,8 @@
 # PyDataQuality
 
-**The Enterprise-Grade Data Quality Engine for Python.**
+**Find out what is wrong with a dataset, and get the rows to fix, in one line of Python.**
 
-PyDataQuality automates the tedious 80% of data science: validating, profiling, and cleaning new datasets. It transforms raw pandas DataFrames into publication-ready quality reports with a single line of code. Designed for high-velocity data teams, it features batch processing for big data, custom rule validation, and AI-powered remediation suggestions.
+PyDataQuality automates the tedious 80% of data science: validating, profiling, and cleaning new datasets. It transforms raw pandas DataFrames into publication-ready quality reports with a single line of code. It also samples large files, applies your own validation rules, compares two datasets for drift, and writes a prompt you can hand to an AI assistant to get cleaning code.
 
 ![Data Quality Analysis](https://raw.githubusercontent.com/DominionAkinrotimi/pydataquality/main/docs/images/sample_visualization.png)
 
@@ -15,8 +15,10 @@ PyDataQuality automates the tedious 80% of data science: validating, profiling, 
 - **CLI Interface**: Auto-detects file formats from the terminal - no coding required
 - **Interactive Notebook Display**: Direct rendering in Jupyter/Colab with `show_report()`
 - **Batch Sampling**: Process large datasets (GBs) efficiently with chunk-based sampling
-- **Custom YAML Rules**: Enterprise-grade validation with configuration files
-- **AI Remediation Prompts**: Auto-generated Python scripts for fixing detected issues
+- **Custom YAML Rules**: Per-column rules (`min`, `max`, `allowed_values`, `unique`, `not_null`) loaded from a YAML file
+- **Duplicate Detection**: Exact duplicate rows are reported
+- **Drift Detection**: Population Stability Index and KS test between two datasets via `compare_drift()`
+- **AI Remediation Prompts**: A ready-to-paste prompt describing the issues. Raw values from columns that look like personal data are left out by default
 - **Comprehensive Visualizations**: Publication-quality plots for data quality assessment
 - **Professional Reports**: HTML, text, and JSON reports with actionable insights
 - **Easy Integration**: Works seamlessly with pandas DataFrames from any source
@@ -38,8 +40,8 @@ PyDataQuality automates the tedious 80% of data science: validating, profiling, 
 
 ### The Problem
 You just received a new dataset. You need to know what's wrong with it and how to fix it - **fast**. Existing tools either:
-- Take too long (pandas-profiling: 10+ minutes, 200MB reports)
-- Require too much setup (Great Expectations: YAML configs, checkpoints, data contexts)
+- Produce a long report to read rather than a list of things to fix (ydata-profiling, now fg-data-profiling)
+- Require setup before the first result (Great Expectations: data contexts, expectation suites, checkpoints)
 - Don't give actionable insights (pandas `.describe()`: just basic stats)
 
 ### The Solution
@@ -49,31 +51,22 @@ PyDataQuality fills the gap between "too simple" and "too complex":
 
 ### Comparison with Alternatives
 
-| Feature | pandas-profiling | Great Expectations | **PyDataQuality** |
+| | ydata-profiling | Great Expectations | **PyDataQuality** |
 |:--------|:-----------------|:-------------------|:------------------|
-| One-liner usage | ❌ | ❌ | ✅ |
-| Extract bad rows | ❌ | ❌ | ✅ |
-| CLI support | ❌ | ❌ | ✅ |
-| Fast on large data | ❌ | ✅ | ✅ |
-| No config needed | ✅ | ❌ | ✅ |
-| AI integration | ❌ | ❌ | ✅ |
-| Beginner-friendly | ⚠️ | ❌ | ✅ |
+| Result without any configuration | ✅ | ❌ | ✅ |
+| Returns the problem rows as a DataFrame | ❌ | ✅ (per expectation) | ✅ |
+| Command line tool | ✅ | ✅ | ✅ |
+| You write the rules yourself | Not applicable | Required | Optional |
+| Depth of profiling and number of checks | Highest | Highest | Basic |
+| Exit code to stop a pipeline | ❌ | ✅ | ✅ (`--fail-on`) |
+
+Those projects do far more than PyDataQuality. Use them when you need exhaustive profiling or a managed set of expectations. Use this when you want a short answer quickly.
 
 ### Real-World Example
 
 **Scenario**: Data scientist gets a CSV with 1M rows
 
-**With pandas-profiling**:
 ```python
-# Takes 10+ minutes, generates 200MB HTML
-profile = ProfileReport(df)
-profile.to_file("report.html")
-# Now what? How do I fix the issues?
-```
-
-**With PyDataQuality**:
-```python
-# Takes 30 seconds
 analyzer = pdq.analyze_dataframe(df)
 bad_ages = analyzer.get_problematic_rows('age', 'outliers')
 bad_ages.to_csv('fix_these.csv')  # Send to data team
@@ -84,18 +77,19 @@ bad_ages.to_csv('fix_these.csv')  # Send to data team
 ## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/DominionAkinrotimi/pydataquality.git
-cd pydataquality
-
-# Install in development mode
-pip install -e .
-
-# Install requirements directly
-pip install -r requirements.txt
+pip install pydataquality
 
 # For interactive notebook support (Jupyter/Colab)
-pip install ".[notebook]"
+pip install "pydataquality[notebook]"
+```
+
+To work on the library itself:
+
+```bash
+git clone https://github.com/DominionAkinrotimi/pydataquality.git
+cd pydataquality
+pip install -e ".[dev]"
+pytest
 ```
 
 ## Quick Start
@@ -146,14 +140,42 @@ print(prompt)
 Run the analysis directly from your terminal:
 
 ```bash
-# Basic usage
-python -m pydataquality data.csv
+# Basic usage (CSV, Excel, JSON and Parquet are detected from the extension)
+pydataquality data.csv
 
 # Generate professional HTML report
-python -m pydataquality data.csv --report html --theme professional
+pydataquality data.csv --report html --theme professional
 
 # Create visualizations
-python -m pydataquality data.csv --visualize
+pydataquality data.csv --visualize
+
+# Apply your own rules and stop a pipeline when they fail (exit code 2)
+pydataquality data.csv --rules rules.yaml --fail-on critical
+```
+
+`python -m pydataquality` works the same way.
+
+### Custom rules
+
+```yaml
+# rules.yaml
+thresholds:
+  missing_critical: 0.2
+column_rules:
+  age:
+    min: 0
+    max: 120
+  status:
+    allowed_values: [paid, pending, refunded]
+  order_id:
+    unique: true
+    not_null: true
+```
+
+```python
+rules = pdq.load_rules_from_yaml("rules.yaml")
+analyzer = pdq.analyze_dataframe(df, rules=rules)
+bad = analyzer.get_problematic_rows("age", "rule_violation")
 ```
 
 ## Research Paper

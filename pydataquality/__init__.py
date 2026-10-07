@@ -2,12 +2,11 @@
 PyDataQuality - A comprehensive data quality analysis tool for Python.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Dominion Akinrotimi"
 
 from .analyzer import DataQualityAnalyzer
 from .reporter import QualityReportGenerator
-from .visualizer import DataQualityVisualizer
 from .utils import (
     sample_dataframe,
     sample_large_dataset,
@@ -21,8 +20,18 @@ from .utils import (
 from .comparator import compare_reports, compare_drift
 
 
+def __getattr__(name):
+    # matplotlib and seaborn take seconds to import, so the plotting module
+    # is only loaded when a chart is actually requested.
+    if name == "DataQualityVisualizer":
+        from .visualizer import DataQualityVisualizer
+
+        return DataQualityVisualizer
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 # Convenience functions
-def analyze_dataframe(df, name="Dataset", verbose=False, config=None):
+def analyze_dataframe(df, name="Dataset", verbose=False, config=None, rules=None):
     """
     Convenience function to analyze a DataFrame.
 
@@ -36,14 +45,23 @@ def analyze_dataframe(df, name="Dataset", verbose=False, config=None):
         Whether to print progress
     config : dict
         Custom configuration settings (optional)
+    rules : dict
+        Custom validation rules, e.g. from ``load_rules_from_yaml`` (optional)
 
     Returns
     -------
     DataQualityAnalyzer
         Analyzer instance
     """
-    analyzer = DataQualityAnalyzer(df, name=name, config=config)
+    analyzer = DataQualityAnalyzer(df, name=name, config=config, rules=rules)
     # Analysis is triggered in __init__
+    if verbose:
+        summary = analyzer.get_summary()
+        print(
+            f"Analyzed '{name}': {summary['dataset']['rows']} rows, "
+            f"{summary['dataset']['columns']} columns, "
+            f"{len(analyzer.issues)} issues found"
+        )
     return analyzer
 
 
@@ -130,6 +148,8 @@ def create_visual_report(analyzer, show_plots=True, save_path=None):
     DataQualityVisualizer
         Visualizer instance
     """
+    from .visualizer import DataQualityVisualizer
+
     visualizer = DataQualityVisualizer(analyzer)
     visualizer.create_comprehensive_report(save_path=save_path)
     return visualizer

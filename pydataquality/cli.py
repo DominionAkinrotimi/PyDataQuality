@@ -15,6 +15,7 @@ try:
         generate_report,
         sample_dataframe,
         create_visual_report,
+        load_rules_from_yaml,
     )
 except ImportError:
     # Fallback if run as script directly (not recommended for package usage)
@@ -24,10 +25,42 @@ except ImportError:
         generate_report,
         sample_dataframe,
         create_visual_report,
+        load_rules_from_yaml,
     )
 
+EXTENSION_FORMATS = {
+    ".csv": "csv",
+    ".tsv": "csv",
+    ".txt": "csv",
+    ".xlsx": "excel",
+    ".xls": "excel",
+    ".json": "json",
+    ".parquet": "parquet",
+}
 
-def main():
+
+def load_data(path, file_format="auto"):
+    """Load a data file. ``file_format='auto'`` picks the reader from the extension."""
+    if file_format == "auto":
+        ext = os.path.splitext(path)[1].lower()
+        file_format = EXTENSION_FORMATS.get(ext)
+        if file_format is None:
+            print(f"Warning: Unknown extension '{ext}', trying CSV...")
+            file_format = "csv"
+
+    if file_format == "csv":
+        sep = "\t" if path.lower().endswith(".tsv") else ","
+        return pd.read_csv(path, sep=sep)
+    if file_format == "excel":
+        return pd.read_excel(path)
+    if file_format == "json":
+        return pd.read_json(path)
+    if file_format == "parquet":
+        return pd.read_parquet(path)
+    raise ValueError(f"Unsupported format: {file_format}")
+
+
+def main(argv=None):
     parser = argparse.ArgumentParser(
         description="PyDataQuality - Automated Data Quality Analysis Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -37,16 +70,19 @@ Examples:
   %(prog)s data.csv --report html --theme professional  # Professional report
   %(prog)s data.csv --visualize              # Create visualizations
   %(prog)s data.csv --output results/        # Save all outputs to directory
+  %(prog)s data.csv --rules rules.yaml --fail-on critical  # Gate a pipeline
         """,
     )
 
-    parser.add_argument("file", help="Input data file (CSV, Excel, or JSON)")
+    parser.add_argument(
+        "file", help="Input data file (CSV, Excel, JSON, or Parquet)"
+    )
     parser.add_argument("--name", default="Dataset", help="Name of the dataset")
     parser.add_argument(
         "--format",
-        choices=["csv", "excel", "json"],
-        default="csv",
-        help="Input file format",
+        choices=["auto", "csv", "excel", "json", "parquet"],
+        default="auto",
+        help="Input file format (default: detect from the file extension)",
     )
     parser.add_argument(
         "--report",
@@ -54,15 +90,12 @@ Examples:
         default="html",
         help="Report format (default: html)",
     )
-
-    # THEME SUPPORT (Restored)
     parser.add_argument(
         "--theme",
         choices=["creative", "professional", "simple"],
         default="creative",
         help="Report theme (HTML only)",
     )
-
     parser.add_argument(
         "--output", help="Output directory for reports and visualizations"
     )
@@ -70,71 +103,51 @@ Examples:
         "--visualize", action="store_true", help="Create and save visualizations"
     )
     parser.add_argument("--sample", type=int, help="Sample size for large datasets")
+    parser.add_argument("--rules", help="YAML file with custom validation rules")
+    parser.add_argument(
+        "--fail-on",
+        choices=["never", "critical", "warning"],
+        default="never",
+        help="Exit with code 2 when issues of this severity (or worse) are found. "
+        "Use it to stop a pipeline or CI job on bad data (default: never)",
+    )
     parser.add_argument(
         "--verbose", action="store_true", help="Display detailed progress information"
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    # 1. Determine file type
-    ext = os.path.splitext(args.file)[1].lower()
-
-    # 2. Load Data
     try:
-        if ext == ".csv":
-            df = pd.read_csv(args.file)
-        elif ext in [".xlsx", ".xls"]:
-            df = pd.read_excel(args.file)
-        elif ext == ".json":
-            df = pd.read_json(args.file)
-        elif ext == ".parquet":
-            df = pd.read_parquet(args.file)
-        else:
-            # Fallback to user provided format or CSV
-            print(f"Warning: Unknown extension '{ext}', trying CSV...")
-            df = pd.read_csv(args.file)
-
-        print(
-            f"Successfully loaded {args.file} with {len(df)} rows and {len(df.columns)} columns"
-        )
+        df = load_data(args.file, args.format)
     except Exception as e:
         print(f"Error loading file: {e}")
         sys.exit(1)
 
-    print(f"Loaded dataset: {df.shape[0]} rows, {df.shape[1]} columns")
+    print(f"Loaded {args.file}: {df.shape[0]} rows, {df.shape[1]} columns")
 
     # Sample if requested
     if args.sample and args.sample < len(df):
         df = sample_dataframe(df, n_samples=args.sample)
         print(f"Sampled to: {len(df)} rows")
 
-    # Create output directory if specified
+    output_path = args.output or "."
     if args.output:
         os.makedirs(args.output, exist_ok=True)
-        output_path = args.output
-    else:
-        output_path = "."
+
+    rules = load_rules_from_yaml(args.rules) if args.rules else None
 
     # Perform analysis
-    analyzer = analyze_dataframe(df, name=args.name, verbose=args.verbose)
+    analyzer = analyze_dataframe(
+        df, name=args.name, verbose=args.verbose, rules=rules
+    )
 
     # Generate report
     if args.report != "none":
-        if args.output and (
-            args.output.endswith(".html") or args.output.endswith(".json")
-        ):
-            # If user gave a full file path for output in the output argument (not typical but possible)
-            # But usually output is a dir based on the help text "Output directory..."
-            # Let's stick to the directory logic
-            report_file = os.path.join(
-                output_path,
-                f"{args.name.replace(' ', '_')}_quality_report.{args.report}",
-            )
-        else:
-            report_file = os.path.join(
-                output_path,
-                f"{args.name.replace(' ', '_')}_quality_report.{args.report}",
-            )
+        extension = "txt" if args.report == "text" else args.report
+        report_file = os.path.join(
+            output_path,
+            f"{args.name.replace(' ', '_')}_quality_report.{extension}",
+        )
 
         # Pass theme only if format is html
         kwargs = {}
@@ -152,17 +165,29 @@ Examples:
 
     # Display quick summary
     summary = analyzer.get_summary()
+    critical = summary["issues_by_severity"].get("critical", 0)
+    warning = summary["issues_by_severity"].get("warning", 0)
     print("\n" + "=" * 60)
     print("ANALYSIS SUMMARY")
     print("=" * 60)
-    print(f"Critical issues: {summary['issues_by_severity'].get('critical', 0)}")
-    print(f"Warning issues: {summary['issues_by_severity'].get('warning', 0)}")
+    print(f"Critical issues: {critical}")
+    print(f"Warning issues: {warning}")
     if "missing_data_overview" in summary:
         print(
             f"Total missing: {summary['missing_data_overview']['total_missing_cells']:,} "
             f"({summary['missing_data_overview']['total_missing_percentage']:.1f}%)"
         )
     print("=" * 60)
+
+    if args.verbose:
+        for issue in analyzer.issues:
+            print(f"[{issue.severity}] {issue.column}: {issue.message}")
+
+    failed = (args.fail_on == "critical" and critical > 0) or (
+        args.fail_on == "warning" and (critical > 0 or warning > 0)
+    )
+    if failed:
+        sys.exit(2)
 
 
 if __name__ == "__main__":

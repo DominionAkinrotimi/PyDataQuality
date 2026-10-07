@@ -71,6 +71,11 @@ class DataQualityComparator:
         if len(ref_series) == 0 or len(curr_series) == 0:
             return 0.0
 
+        # Booleans are compared as two categories, not as a numeric range
+        if pd.api.types.is_bool_dtype(ref_series):
+            ref_series = ref_series.astype(str)
+            curr_series = curr_series.astype(str)
+
         # Check if numeric
         if pd.api.types.is_numeric_dtype(ref_series):
             try:
@@ -163,6 +168,19 @@ class DataQualityComparator:
 
             return {"statistic": float(d), "p_value": float(p_val)}
 
+    def _is_identifier(self, col: str) -> bool:
+        """
+        True for columns where every value is different (IDs, emails, timestamps
+        stored as text). Two samples of such a column never share a distribution,
+        so drift statistics on them are always a false alarm.
+        """
+        series = self.ref.df[col].dropna()
+        if len(series) < 20 or pd.api.types.is_float_dtype(series):
+            return False
+        if pd.api.types.is_bool_dtype(series):
+            return False
+        return series.nunique() / len(series) > 0.95
+
     def compare_distributions(self) -> pd.DataFrame:
         """
         Compare distribution drift for all common columns using PSI and KS-test.
@@ -180,6 +198,20 @@ class DataQualityComparator:
             dtype_cat = self.ref._categorize_dtype(self.ref.column_stats[col].dtype)
             ref_stats = self.ref.column_stats[col].stats
             curr_stats = self.curr.column_stats[col].stats
+
+            if self._is_identifier(col):
+                drift_data.append(
+                    {
+                        "column": col,
+                        "dtype": self.ref.column_stats[col].dtype,
+                        "psi": np.nan,
+                        "drift_status": "not_applicable",
+                        "pct_change": np.nan,
+                        "ks_statistic": np.nan,
+                        "ks_p_value": np.nan,
+                    }
+                )
+                continue
 
             psi = self.calculate_psi(col)
 
@@ -210,7 +242,9 @@ class DataQualityComparator:
                 )
 
             # Perform continuous KS test
-            if pd.api.types.is_numeric_dtype(self.ref.df[col]):
+            if pd.api.types.is_numeric_dtype(
+                self.ref.df[col]
+            ) and not pd.api.types.is_bool_dtype(self.ref.df[col]):
                 ks_res = self.calculate_ks(col)
                 entry["ks_statistic"] = ks_res["statistic"]
                 entry["ks_p_value"] = ks_res["p_value"]

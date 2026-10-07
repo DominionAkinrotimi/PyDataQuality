@@ -4,6 +4,8 @@ The ``pdq`` command.
     pdq check orders.csv      is this file safe to use?
     pdq accept orders.csv     remember this file as normal
     pdq rows orders.csv       save the affected rows, with reasons
+    pdq report orders.csv     write a one-page summary to share
+    pdq ui                    open a page where you can drop a file in
 
 Exit codes for ``check``: 0 nothing found, 1 warnings, 2 problems, 3 the file
 could not be read.
@@ -14,7 +16,7 @@ import json
 import os
 import sys
 
-COMMANDS = ("check", "accept", "rows")
+COMMANDS = ("check", "accept", "rows", "report", "ui")
 EXIT_UNREADABLE = 3
 
 
@@ -81,6 +83,16 @@ def build_parser() -> argparse.ArgumentParser:
     rows.add_argument("-o", "--output", help="where to save (default: <file>_problem_rows.csv)")
     rows.add_argument("--baseline")
     rows.add_argument("--no-baseline", action="store_true")
+
+    report = commands.add_parser("report", help="write a one-page HTML summary to share with whoever sent the file")
+    report.add_argument("file")
+    report.add_argument("-o", "--output", help="where to save (default: <file>_check.html)")
+    report.add_argument("--baseline")
+    report.add_argument("--no-baseline", action="store_true")
+
+    ui = commands.add_parser("ui", help="open a page in your browser where you can drop a file in")
+    ui.add_argument("--port", type=int, default=0, help="port to use (default: any free port)")
+    ui.add_argument("--no-browser", action="store_true", help="do not open the browser automatically")
     return parser
 
 
@@ -102,6 +114,8 @@ def _run_check(args, out):
     hints = []
     if result.findings and any(f.rows is not None for f in result.findings):
         hints.append((f"pdq rows {args.file}", "save the affected rows with reasons"))
+    if result.findings:
+        hints.append((f"pdq report {args.file}", "one-page summary to send to whoever made the file"))
     if not result.has_baseline:
         hints.append((f"pdq accept {args.file}", "remember this file as normal and compare the next one with it"))
     elif not result.ok:
@@ -156,6 +170,25 @@ def _run_rows(args, out):
     return 0
 
 
+def _run_report(args, out):
+    from .checker import check
+
+    result = check(args.file, baseline=False if args.no_baseline else args.baseline)
+    output = args.output or f"{os.path.splitext(args.file)[0]}_check.html"
+    with open(output, "w", encoding="utf-8") as handle:
+        handle.write(result.to_html())
+    print(f"Saved the summary to {output}", file=out)
+    print("It is a single file. You can email it or open it in any browser.", file=out)
+    return 0
+
+
+def _run_ui(args, out):
+    from .webui import serve
+
+    serve(port=args.port, open_browser=not args.no_browser, out=out)
+    return 0
+
+
 def main(argv=None, out=None) -> int:
     from .checker import DataFileError
 
@@ -170,7 +203,14 @@ def main(argv=None, out=None) -> int:
         parser.print_help(out)
         return 0
     try:
-        return {"check": _run_check, "accept": _run_accept, "rows": _run_rows}[args.command](args, out)
+        handlers = {
+            "check": _run_check,
+            "accept": _run_accept,
+            "rows": _run_rows,
+            "report": _run_report,
+            "ui": _run_ui,
+        }
+        return handlers[args.command](args, out)
     except DataFileError as error:
         print(f"Could not check the file. {error}", file=sys.stderr)
         return EXIT_UNREADABLE

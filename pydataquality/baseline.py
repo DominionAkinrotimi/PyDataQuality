@@ -56,17 +56,19 @@ def dataset_name(path: str) -> str:
     return "_".join(kept) or "_".join(words) or "data"
 
 
-def baseline_path(data_path: str, name: Optional[str] = None) -> str:
-    folder = os.path.join(os.path.dirname(os.path.abspath(data_path)), BASELINE_DIR)
+def baseline_path(data_path: str, name: Optional[str] = None, folder: Optional[str] = None) -> str:
+    """Where the baseline for a data file lives: ``.pdq`` beside it, unless ``folder`` is given."""
+    if folder is None:
+        folder = os.path.join(os.path.dirname(os.path.abspath(data_path)), BASELINE_DIR)
     return os.path.join(folder, f"{name or dataset_name(data_path)}.yml")
 
 
-def find_baseline(data_path: str, columns) -> Optional[str]:
+def find_baseline(data_path: str, columns, folder: Optional[str] = None) -> Optional[str]:
     """
     The baseline for a data file: one saved under the same dataset name, or
     failing that, the saved baseline whose columns best match (80% or more).
     """
-    exact = baseline_path(data_path)
+    exact = baseline_path(data_path, folder=folder)
     if os.path.isfile(exact):
         return exact
     folder = os.path.dirname(exact)

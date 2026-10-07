@@ -6,10 +6,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="pydataquality",
-    version="0.1.1",
+    version="0.2.0",
     author="Dominion Akinrotimi",
     author_email="contact.dominionakinrotimi@gmail.com",
-    description="A comprehensive data quality analysis library for pandas DataFrames",
+    description="Know whether a data file is safe to use, and what changed since the last one",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/DominionAkinrotimi/pydataquality",
@@ -21,14 +21,13 @@ setup(
         "Topic :: Scientific/Engineering :: Information Analysis",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=[
         "pandas>=1.3.0",
         "numpy>=1.21.0",
@@ -36,6 +35,7 @@ setup(
         "seaborn>=0.11.2",
         "jinja2>=3.0.0",
         "PyYAML>=5.4",
+        "openpyxl>=3.0",
     ],
     extras_require={
         "dev": [
@@ -55,6 +55,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
+            "pdq=pydataquality.pdq_cli:run",
             "pydataquality=pydataquality.cli:main",
         ],
     },

@@ -1,6 +1,69 @@
 # PyDataQuality API Reference
 
-This document provides detailed information about all classes, functions, and methods available in PyDataQuality.
+This document describes what is available from Python. It has two parts: **checking files**, the main interface, and the original **profiling interface**.
+
+## Checking files
+
+### `check(data, baseline=None, rules=None, columns=None, only=None, name=None) -> CheckResult`
+
+Check a file or DataFrame.
+
+- `data`: a file path (CSV, TSV, Excel, JSON, Parquet) or a pandas DataFrame
+- `baseline`: `None` looks for a saved baseline next to the file; `False` never compares; a path, a dataset name or a baseline dict uses that one
+- `rules`: your own checks, `{column: [rule, ...]}`, added to any stored in the baseline
+- `columns`: only report findings about these columns
+- `only`: only report these kinds of finding, by code (for example `["duplicates"]`)
+- `name`: label used in the output
+
+Raises `DataFileError`, with a message written for the person at the keyboard, if the file or its baseline cannot be read.
+
+### `accept(data, path=None, name=None) -> str`
+
+Remember a file as normal. Returns the path of the baseline file. For a file path the baseline is saved in a `.pdq` folder beside it. For a DataFrame, `path` is required.
+
+### `load_file(path) -> pandas.DataFrame`
+
+Read CSV, TSV, Excel, JSON or Parquet. Detects the separator and falls back through common text encodings.
+
+### CheckResult
+
+| Member | Description |
+|:--|:--|
+| `verdict` | `"ok"`, `"warnings"` or `"problems"` |
+| `headline` | The verdict in words, for example `"NOT SAFE TO USE"` |
+| `ok`, `bool(result)` | `True` only when nothing was found |
+| `exit_code` | 0, 1 or 2 |
+| `findings` | All findings, problems first |
+| `problems`, `warnings`, `notes` | Findings by level |
+| `has_baseline` | Whether the file was compared with an earlier one |
+| `clean_columns()` | Columns with nothing to report |
+| `bad_rows(include_notes=False)` | DataFrame of affected rows with a `_pdq_reason` column |
+| `to_text(color=False, why=False)` | The same text the command prints |
+| `to_dict()` | A JSON-ready summary |
+| `to_html()` | A self-contained summary page to share |
+| `hidden` | Number of findings silenced by the baseline's `ignore` list |
+
+In a notebook, a `CheckResult` displays as the summary page.
+
+### Finding
+
+| Field | Description |
+|:--|:--|
+| `level` | `"problem"`, `"warning"` or `"note"` |
+| `code` | Short stable name, for example `"duplicates"`, `"future_date"`, `"new_values"` |
+| `column` | Column name, or `"(whole file)"` |
+| `message` | One plain-language sentence |
+| `count` | Rows or values affected |
+| `examples` | A few example values |
+| `rows` | Index labels of the affected rows, when there are any |
+| `why` | How the tool decided |
+| `key` | `"code:column"`, used in the `ignore` list |
+
+Finding codes: `no_rows`, `no_header`, `duplicates`, `empty_column`, `missing`, `id_repeats`, `spelling`, `bad_email`, `bad_date`, `mixed_dates`, `future_date`, `not_a_number`, `impossible`, `negative`, `extreme`, `unusual`; with a baseline also `same_file`, `column_missing`, `column_new`, `row_count`, `type_changed`, `missing_jump`, `not_unique`, `new_values`, `out_of_range`, `shifted`, `older_dates`; and `rule` for your own rules.
+
+---
+
+## Profiling interface
 
 ## Core Classes
 
@@ -10,12 +73,13 @@ The main analysis class that performs comprehensive data quality assessment.
 
 #### Constructor
 ```python
-DataQualityAnalyzer(df: pandas.DataFrame, name: str = "Dataset")
+DataQualityAnalyzer(df: pandas.DataFrame, name: str = "Dataset", rules: dict = None, config: dict = None)
 ```
 
 **Parameters:**
 - `df`: Input pandas DataFrame to analyze
 - `name`: Name of the dataset for reporting purposes
+- `rules`: Custom rules (optional): `{"thresholds": {...}, "column_rules": {column: {"min", "max", "allowed_values", "unique", "not_null"}}}`
 - `config`: Dictionary of configuration overrides (optional). Keys matching `QUALITY_THRESHOLDS`.
 
 **Attributes:**
@@ -184,7 +248,7 @@ Saves report to file in specified format ('html', 'text', 'json').
 
 ## Main Module Functions
 
-### `analyze_dataframe(df, name="Dataset", verbose=True) -> DataQualityAnalyzer`
+### `analyze_dataframe(df, name="Dataset", verbose=False, config=None, rules=None) -> DataQualityAnalyzer`
 Perform comprehensive data quality analysis on a DataFrame.
 
 **Parameters:**
@@ -195,7 +259,7 @@ Perform comprehensive data quality analysis on a DataFrame.
 
 **Returns:** `DataQualityAnalyzer` instance
 
-### `create_visual_report(analyzer, save_dir=None, show_plots=True) -> DataQualityVisualizer`
+### `create_visual_report(analyzer, show_plots=True, save_path=None) -> DataQualityVisualizer`
 Create visualizations from data quality analysis.
 
 **Parameters:**
@@ -226,7 +290,7 @@ Render the interactive quality report directly in a Jupyter/Colab notebook.
     - `'professional'`: Clean, corporate-friendly design suitable for PDFs.
     - `'simple'`: Minimalist layout for quick checking.
 
-### `generate_ai_prompt(analyzer, include_eda=True) -> str`
+### `generate_ai_prompt(analyzer) -> str`
 Generate an AI remediation prompt for fixing data quality issues.
 
 This creates a prompt that can be copied to an AI assistant (ChatGPT, Claude, Gemini) to get automated code for fixing detected quality issues. It includes detailed issue descriptions (e.g., outlier ranges) and statistical context (EDA) to help the AI make informed decisions.

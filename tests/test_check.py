@@ -363,6 +363,33 @@ def test_cli_unreadable_file(tmp_path):
     assert code == 3
 
 
+def test_damaged_baseline_is_a_plain_error(folder, capsys):
+    path = pdq.accept(str(folder / "orders_september_2026.csv"))
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write("columns: [this is: not valid")
+
+    with pytest.raises(pdq.DataFileError) as error:
+        pdq.check(str(folder / "orders_october_2026.csv"))
+    assert "could not be read" in str(error.value)
+
+    code, _ = run_cli("check", folder / "orders_october_2026.csv")
+    assert code == 3
+    assert "pdq accept" in capsys.readouterr().err
+
+
+def test_unexpected_errors_do_not_show_a_traceback(folder, monkeypatch, capsys):
+    import pydataquality.checker as checker
+
+    def explode(*args, **kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(checker, "check", explode)
+    code, _ = run_cli("check", folder / "orders_october_2026.csv")
+    assert code == 3
+    message = capsys.readouterr().err
+    assert "Something went wrong" in message and "Traceback" not in message
+
+
 # ------------------------------------------------------------------ loading
 def test_semicolon_and_latin1_csv(tmp_path):
     path = tmp_path / "ventes.csv"

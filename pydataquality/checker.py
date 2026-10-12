@@ -243,22 +243,32 @@ def _painter(enabled: bool):
     return paint
 
 
+def _load_baseline(path: str) -> Dict:
+    try:
+        return base.load(path)
+    except Exception as error:
+        raise DataFileError(
+            f"The baseline file {path} could not be read ({error}). "
+            "Fix the edit, or delete the file and run pdq accept again."
+        )
+
+
 def _resolve_baseline(baseline, path, columns):
     """Returns (baseline dict or None, where it came from or None)."""
     if isinstance(baseline, dict):
         return baseline, None
     if isinstance(baseline, str):
         if os.path.isfile(baseline):
-            return base.load(baseline), baseline
+            return _load_baseline(baseline), baseline
         if path:  # a dataset name rather than a file path
             named = base.baseline_path(path, baseline)
             if os.path.isfile(named):
-                return base.load(named), named
+                return _load_baseline(named), named
         raise DataFileError(f"There is no baseline at {baseline}")
     if baseline is None and path:
         found = base.find_baseline(path, columns)
         if found:
-            return base.load(found), found
+            return _load_baseline(found), found
     return None, None
 
 

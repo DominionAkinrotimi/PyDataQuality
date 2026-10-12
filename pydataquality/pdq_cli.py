@@ -8,7 +8,7 @@ The ``pdq`` command.
     pdq ui                    open a page where you can drop a file in
 
 Exit codes for ``check``: 0 nothing found, 1 warnings, 2 problems, 3 the file
-could not be read.
+or its baseline could not be read.
 """
 
 import argparse
@@ -213,6 +213,19 @@ def main(argv=None, out=None) -> int:
         return handlers[args.command](args, out)
     except DataFileError as error:
         print(f"Could not check the file. {error}", file=sys.stderr)
+        return EXIT_UNREADABLE
+    except KeyboardInterrupt:
+        return 130
+    except Exception as error:
+        if os.environ.get("PDQ_DEBUG"):
+            raise
+        print(
+            f"Something went wrong inside PyDataQuality: {type(error).__name__}: {error}\n"
+            "Your file was not changed. Please report this at "
+            "https://github.com/DominionAkinrotimi/PyDataQuality/issues "
+            "(set PDQ_DEBUG=1 and run again to see the full details).",
+            file=sys.stderr,
+        )
         return EXIT_UNREADABLE
 
 

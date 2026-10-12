@@ -30,6 +30,20 @@ Next:  pdq rows orders_november.csv     save the affected rows with reasons
 
 Your data never leaves your machine. There is no account and no server.
 
+## Who it is for
+
+Anyone who is sent data files by other people and has to trust them: analysts with a monthly export, finance and operations teams with supplier or bank files, researchers with survey downloads, data scientists with this week's extract. You do not need to know what the rules for the data should be. PyDataQuality learns them from a file you approve.
+
+## Three ways to use it
+
+| | For | Start with |
+|:--|:--|:--|
+| **A page in your browser** | People who would rather not use a terminal | `pdq ui` |
+| **A command** | Quick checks, scheduled jobs and pipelines | `pdq check file.csv` |
+| **A Python library** | Notebooks and scripts | `pdq.check(df)` |
+
+All three run the same checks and give the same answer.
+
 ## Install
 
 ```bash
@@ -181,7 +195,7 @@ pdq ui              open the drag-and-drop page in your browser
 
 ### In a pipeline or scheduled job
 
-`pdq check` exits with `0` when nothing was found, `1` for warnings, `2` for problems and `3` if the file could not be read:
+`pdq check` exits with `0` when nothing was found, `1` for warnings, `2` for problems and `3` if the file or its baseline could not be read:
 
 ```bash
 pdq check incoming/orders.csv || exit 1
@@ -210,6 +224,28 @@ pdq.accept(df, path="baselines/orders.yml")
 result = pdq.check(new_df, baseline="baselines/orders.yml",
                    rules={"price": ["greater than 0"]})
 ```
+
+## Reliability and privacy
+
+- **Private.** No network requests, no telemetry, no account. See [SECURITY.md](SECURITY.md).
+- **The browser page is local.** It is served on `127.0.0.1`, only answers your own computer, and deletes each dropped file after reading it.
+- **It tells you when it cannot do something.** An unreadable file, a damaged baseline or a mistyped rule produces a plain message saying what to do next. Nothing is skipped silently and your files are never modified.
+- **Quiet by default.** It is tuned to avoid false alarms, because a tool that cries wolf gets ignored. A clean file says so.
+- **Tested.** 90+ automated tests run on Python 3.8 to 3.13.
+
+## Status
+
+Version 0.2. What works today, and what is planned next:
+
+| Works today | Planned |
+|:--|:--|
+| `pdq check`, `accept`, `rows`, `report` | Viewing the affected rows inside the browser page |
+| Baselines and comparison with the last file | Reviewing what was learned before saving it |
+| Your own rules in plain sentences | Building rules from menus in the browser page |
+| Browser page: drop a file, get a verdict, download rows and a summary | A history of past checks for each dataset |
+| Python library and notebook display | Choosing a sheet in multi-sheet workbooks |
+
+The full plan for the browser app, screen by screen, is in [docs/ui-plan.md](docs/ui-plan.md).
 
 ## What it is not
 
@@ -241,7 +277,13 @@ pydataquality data.csv --report html --visualize
 pydataquality data.csv --rules rules.yaml --fail-on critical
 ```
 
-See the [quickstart](docs/quickstart.md), [API reference](docs/api.md) and [examples](examples/).
+## Documentation
+
+- [Quickstart](docs/quickstart.md): install to a checked file in five minutes
+- [User guide](docs/user_guide.md): baselines, rules, pipelines, troubleshooting
+- [API reference](docs/api.md)
+- [UI plan](docs/ui-plan.md)
+- [Examples](examples/) of the profiling interface
 
 ## Research paper
 

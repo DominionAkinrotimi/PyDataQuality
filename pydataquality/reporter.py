@@ -21,7 +21,21 @@ class QualityReportGenerator:
     def __init__(self, analyzer: DataQualityAnalyzer):
         self.analyzer = analyzer
 
-    def generate_ai_remediation_prompt(self, include_eda: bool = True) -> str:
+    def _is_private_column(self, column: str) -> bool:
+        """
+        Columns where most values are different (names, emails, IDs) hold
+        personal data more often than not, so their raw values are kept out
+        of prompts that will be pasted into an external AI tool.
+        """
+        stats = self.analyzer.column_stats.get(column)
+        if stats is None or "mean" in stats.stats:
+            return False
+        non_missing = stats.total_count - stats.missing_count
+        return non_missing > 0 and stats.unique_count / non_missing > 0.5
+
+    def generate_ai_remediation_prompt(
+        self, include_eda: bool = True, include_values: bool = False
+    ) -> str:
         """
         Generate an AI remediation prompt for fixing data quality issues.
 
@@ -32,6 +46,10 @@ class QualityReportGenerator:
         ----------
         include_eda : bool
             Whether to include statistical context (EDA) in the prompt.
+        include_values : bool
+            Whether to include raw example values from columns that look like
+            personal data (mostly-unique text such as emails or names).
+            Off by default so the prompt is safe to paste into an online tool.
 
         Returns
         -------
@@ -65,7 +83,9 @@ class QualityReportGenerator:
 
                 elif issue.issue_type == "inconsistent_values" and issue.details:
                     examples = issue.details.get("examples", [])
-                    if examples:
+                    if not include_values and self._is_private_column(issue.column):
+                        details.append("example values withheld")
+                    elif examples:
                         details.append(f"e.g., {', '.join(examples[:3])}")
 
                 # Close description
@@ -97,7 +117,9 @@ class QualityReportGenerator:
                         else:
                             # Categorical / Object stats
                             context.append(f"Unique Values={stats.unique_count}")
-                            if "most_common" in stats.stats:
+                            if "most_common" in stats.stats and (
+                                include_values or not self._is_private_column(col)
+                            ):
                                 context.append(
                                     f"Top Value='{stats.stats['most_common']}'"
                                 )

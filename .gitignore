@@ -68,3 +68,6 @@ Thumbs.db
 test_*.png
 test_*.html
 *.backup
+
+# Front-end tooling (the built app in pydataquality/static/app is committed)
+frontend/node_modules/

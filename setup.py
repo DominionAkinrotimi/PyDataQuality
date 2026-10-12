@@ -6,14 +6,15 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="pydataquality",
-    version="0.2.0",
+    version="0.3.0",
     author="Dominion Akinrotimi",
     author_email="contact.dominionakinrotimi@gmail.com",
     description="Know whether a data file is safe to use, and what changed since the last one",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/DominionAkinrotimi/pydataquality",
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests", "tests.*", "examples", "examples.*"]),
+    package_data={"pydataquality": ["static/app/*", "static/app/assets/*"]},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

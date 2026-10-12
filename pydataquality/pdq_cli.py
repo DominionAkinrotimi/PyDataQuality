@@ -183,7 +183,7 @@ def _run_report(args, out):
 
 
 def _run_ui(args, out):
-    from .webui import serve
+    from .server import serve
 
     serve(port=args.port, open_browser=not args.no_browser, out=out)
     return 0

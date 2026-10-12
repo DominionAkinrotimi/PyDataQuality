@@ -119,7 +119,16 @@ Saves the affected rows to `customers_november_problem_rows.csv` with a `_pdq_re
 pdq ui
 ```
 
-A page opens in your browser. Drop a file on it and you get the same verdict, with buttons to download the affected rows, download a summary, or remember the file as normal. The page is served from your own computer and only answers to it. Close the terminal window to stop it.
+An app opens in your browser. Drop a file on it and you get the same verdict. From there you can:
+
+- open any finding to see the rows behind it, search them and download them
+- ask "Why?" to see how a finding was decided
+- review what was learned, column by column, before saving a file as normal
+- mark a finding as fine so it stops being reported for that dataset
+- see every dataset you have saved, with its history of checks
+- try it on a built-in sample file before using your own data
+
+The app is served from your own computer and only answers to it. It loads nothing from the internet. Close the terminal window to stop it.
 
 To send someone the result:
 
@@ -231,19 +240,21 @@ result = pdq.check(new_df, baseline="baselines/orders.yml",
 - **The browser page is local.** It is served on `127.0.0.1`, only answers your own computer, and deletes each dropped file after reading it.
 - **It tells you when it cannot do something.** An unreadable file, a damaged baseline or a mistyped rule produces a plain message saying what to do next. Nothing is skipped silently and your files are never modified.
 - **Quiet by default.** It is tuned to avoid false alarms, because a tool that cries wolf gets ignored. A clean file says so.
-- **Tested.** 90+ automated tests run on Python 3.8 to 3.13.
+- **Tested.** 100 automated tests run on Python 3.8 to 3.13.
 
 ## Status
 
-Version 0.2. What works today, and what is planned next:
+Version 0.3. What works today, and what is planned next:
 
 | Works today | Planned |
 |:--|:--|
-| `pdq check`, `accept`, `rows`, `report` | Viewing the affected rows inside the browser page |
-| Baselines and comparison with the last file | Reviewing what was learned before saving it |
-| Your own rules in plain sentences | Building rules from menus in the browser page |
-| Browser page: drop a file, get a verdict, download rows and a summary | A history of past checks for each dataset |
-| Python library and notebook display | Choosing a sheet in multi-sheet workbooks |
+| `pdq check`, `accept`, `rows`, `report` | Building rules from menus in the browser app |
+| Baselines and comparison with the last file | Re-opening a past result after the app is restarted |
+| Your own rules in plain sentences | A note field on the summary you share |
+| Browser app: verdict, affected rows, review before saving, datasets, history, sheet chooser, sample file | Sharing baselines between the app and the command line |
+| Python library and notebook display | Checking files larger than memory |
+
+The browser app and the command line keep their baselines in different places for now: the app in `~/.pydataquality`, the command in a `.pdq` folder beside your data.
 
 The full plan for the browser app, screen by screen, is in [docs/ui-plan.md](docs/ui-plan.md).
 
@@ -300,6 +311,15 @@ git clone https://github.com/DominionAkinrotimi/pydataquality.git
 cd pydataquality
 pip install -e ".[dev]"
 pytest
+```
+
+The browser app is TypeScript and React in `frontend/`. Its built files are committed to `pydataquality/static/app`, so Python users never need Node. To change it:
+
+```bash
+pdq ui --port 8765 --no-browser     # the Python side
+cd frontend && npm install
+npm run dev                         # live reload, talks to port 8765
+npm run build                       # writes pydataquality/static/app
 ```
 
 Bug reports are most useful with a small file that shows the problem, especially a false alarm on data that is actually fine.

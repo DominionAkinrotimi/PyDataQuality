@@ -2,7 +2,7 @@
 PyDataQuality - A comprehensive data quality analysis tool for Python.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __author__ = "Dominion Akinrotimi"
 
 from .analyzer import DataQualityAnalyzer

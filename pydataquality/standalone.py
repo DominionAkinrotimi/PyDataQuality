@@ -391,7 +391,7 @@ def check_extremes(df: pd.DataFrame, column, kind: str, already=None) -> List[Fi
         wild &= keep
 
     q1, q3 = values.quantile(0.25), values.quantile(0.75)
-    usual = f"most rows are between {num(q1)} and {num(q3)}"
+    usual = f"most rows are between {float(q1):.3g} and {float(q3):.3g}"
     rare_limit = max(5, 0.001 * len(values))
     findings = []
 

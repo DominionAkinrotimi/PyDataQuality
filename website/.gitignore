@@ -1,2 +1,4 @@
 node_modules/
 dist/
+# The repository ignores lib/ folders (a Python convention). This one is source code.
+!src/lib/

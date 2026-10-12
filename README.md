@@ -99,6 +99,22 @@ pdq rows customers_november.csv
 
 Saves the affected rows to `customers_november_problem_rows.csv` with a `_pdq_reason` column saying why each row is there. Send that back to whoever produced the file.
 
+### Prefer not to use a terminal?
+
+```bash
+pdq ui
+```
+
+A page opens in your browser. Drop a file on it and you get the same verdict, with buttons to download the affected rows, download a summary, or remember the file as normal. The page is served from your own computer and only answers to it. Close the terminal window to stop it.
+
+To send someone the result:
+
+```bash
+pdq report customers_november.csv
+```
+
+This writes a single HTML file you can email. In a notebook, `pdq.check(df)` displays the same summary.
+
 ## Your own rules
 
 Open the baseline file and add a `rules` section. Rules are written the way you would say them:
@@ -156,6 +172,11 @@ pdq accept FILE     remember this file as normal
     --as NAME           dataset name, if the file name is not a good guide
 pdq rows FILE       save the affected rows, with reasons
     -o PATH             where to save
+pdq report FILE     write a one-page HTML summary to share
+    -o PATH             where to save
+pdq ui              open the drag-and-drop page in your browser
+    --port N            use a specific port
+    --no-browser        print the address without opening it
 ```
 
 ### In a pipeline or scheduled job
@@ -181,6 +202,7 @@ for finding in result.problems:
     print(finding.column, finding.message, finding.count)
 
 bad = result.bad_rows()                     # DataFrame with a _pdq_reason column
+html = result.to_html()                     # the shareable summary page
 pdq.accept("orders_november.csv")           # make it the new normal
 
 # With a DataFrame, say where the baseline lives

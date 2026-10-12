@@ -213,6 +213,17 @@ class CheckResult:
             lines.append(paint(f"  {n(self.hidden, 'finding')} hidden by the ignore list in the baseline.", "dim"))
         return "\n".join(lines)
 
+    def to_html(self) -> str:
+        """A self-contained HTML page summarising the check."""
+        from .webui import report_html
+
+        return report_html(self)
+
+    def _repr_html_(self) -> str:
+        from .webui import CSS, result_fragment
+
+        return f"<style>{CSS}</style><main>{result_fragment(self)}</main>"
+
     def __repr__(self) -> str:
         return self.to_text()
 

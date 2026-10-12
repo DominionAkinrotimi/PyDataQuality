@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "Inter Tight Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/inter-tight/files/inter-tight-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "JetBrains Mono Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url("@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2") format("woff2-variations");
+}
+
+@layer base {
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body { @apply bg-white font-sans text-[15px] leading-relaxed text-ink antialiased; margin: 0; }
+  ::selection { background: #090a0f; color: #fff; }
+  :focus-visible { outline: 2px solid #090a0f; outline-offset: 3px; border-radius: 6px; }
+  .dark-zone :focus-visible { outline-color: #fff; }
+  h1, h2, h3 { text-wrap: balance; }
+}
+
+@layer components {
+  .wrap { @apply mx-auto w-full max-w-site px-5 md:px-8; }
+  .eyebrow { @apply font-mono text-[12px] font-medium uppercase tracking-[0.12em] text-muted; }
+  .h2 { @apply font-display text-[34px] font-semibold leading-[1.08] tracking-[-0.03em] md:text-[46px]; }
+  .lede { @apply text-[17px] leading-relaxed text-muted md:text-[18px]; }
+  .chip { @apply inline-flex items-center rounded-[4px] border border-line bg-soft2 px-1.5 py-0.5 font-mono text-[12px] leading-5 text-slate2; }
+  .panel { @apply rounded-2xl border border-line bg-white; }
+  .btn { @apply inline-flex min-h-[44px] items-center whitespace-nowrap justify-center gap-2 rounded-lg px-5 text-[15px] font-medium transition-colors; }
+  .btn-dark { @apply btn bg-ink text-white hover:bg-[#1f2937]; }
+  .btn-light { @apply btn border border-line bg-white text-ink hover:border-line2 hover:bg-soft; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-marquee, .animate-marquee-vertical { animation: none !important; }
+}

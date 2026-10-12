@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pydataquality"
-version = "0.1.1"
+version = "0.2.0"
 authors = [
   {name = "Dominion Akinrotimi", email = "contact.dominionakinrotimi@gmail.com"},
 ]
-description = "A comprehensive data quality analysis library for pandas DataFrames"
+description = "Know whether a data file is safe to use, and what changed since the last one"
 readme = "README.md"
 license = {text = "MIT License"}
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -19,11 +19,12 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
 ]
 dependencies = [
@@ -33,6 +34,7 @@ dependencies = [
     "seaborn>=0.11.2",
     "jinja2>=3.0.0",
     "PyYAML>=5.4",
+    "openpyxl>=3.0",
 ]
 
 [project.optional-dependencies]
@@ -46,4 +48,5 @@ Bug-Tracker = "https://github.com/DominionAkinrotimi/pydataquality/issues"
 Source = "https://github.com/DominionAkinrotimi/pydataquality"
 
 [project.scripts]
+pdq = "pydataquality.pdq_cli:run"
 pydataquality = "pydataquality.cli:main"

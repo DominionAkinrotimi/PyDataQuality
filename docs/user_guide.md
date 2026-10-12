@@ -38,7 +38,7 @@ To see how any finding was decided, add `--why`.
 A baseline is what PyDataQuality remembers about a file you approved.
 
 - **Create or replace one:** `pdq accept orders.csv`
-- **Where it is kept:** in a `.pdq` folder next to your data, as `orders.yml`. From the browser page, in `.pydataquality/baselines` in your home folder.
+- **Where it is kept:** in a `.pdq` folder next to your data, as `orders.yml`. From the browser app, in `.pydataquality/baselines` in your home folder. The two are separate for now, so a file saved as normal in the app is not seen by the command, and the other way round.
 - **How the next file finds it:** by name. Dates, month names, numbers and words like "final" or "copy" are ignored, so `orders_november_2026.csv` matches the baseline from `orders_october_2026.csv`. If the name does not match, the saved baseline with the most similar columns is used.
 - **If the wrong one is picked:** name it yourself with `pdq accept orders.csv --as orders` and `pdq check file.csv --baseline orders`.
 - **To check without comparing:** `pdq check file.csv --no-baseline`
@@ -151,7 +151,7 @@ Run `pip install pyarrow`.
 The file probably has title rows above the header. Remove them, or save the sheet as CSV with the header on the first line. Separators `,` `;` tab and `|` are detected automatically.
 
 **Only the first sheet of my workbook was checked**
-That is the current behaviour. Save the sheet you need as its own file.
+The browser app asks which sheet to check. The `pdq check` command reads the first sheet; save the sheet you need as its own file.
 
 **It compared with the wrong earlier file**
 Use `--baseline NAME`, or `--no-baseline` to skip the comparison. See "Working with baselines" above.

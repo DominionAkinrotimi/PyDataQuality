@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fonts ship with the app. Nothing is fetched from the internet. */
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "JetBrains Mono Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url("@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2") format("woff2-variations");
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-canvas text-ink font-sans text-base2 antialiased; margin: 0; }
+  :focus-visible { outline: 2px solid #090a0f; outline-offset: 2px; border-radius: 4px; }
+  .tnum { font-variant-numeric: tabular-nums; }
+}
+
+@layer components {
+  .card { @apply bg-white border border-line rounded-lg; }
+  .caps { @apply text-caps uppercase text-muted; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded px-4 py-2 text-base2 font-medium border transition-colors min-h-[38px] disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-primary { @apply btn bg-ink text-white border-ink hover:bg-[#1f2937] hover:border-[#1f2937]; }
+  .btn-outline { @apply btn bg-white text-ink border-line hover:bg-soft hover:border-line2; }
+  .btn-ghost { @apply btn bg-transparent text-muted border-transparent px-3 hover:text-ink hover:bg-soft2; }
+  .chip { @apply inline-flex items-center rounded-[4px] border border-line bg-soft2 px-1.5 py-0.5 font-mono text-[12px] leading-5 text-slate2; }
+  .input { @apply h-[38px] w-full rounded-[4px] border border-line2 bg-white px-3 text-base2 text-ink placeholder:text-muted; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

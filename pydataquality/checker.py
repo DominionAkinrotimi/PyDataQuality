@@ -35,15 +35,34 @@ class DataFileError(Exception):
     """The file could not be read. The message is written for the person at the keyboard."""
 
 
-def load_file(path: str) -> pd.DataFrame:
-    """Read CSV, TSV, Excel, JSON or Parquet into a DataFrame."""
+EXCEL_EXTENSIONS = (".xlsx", ".xlsm", ".xls")
+
+
+def excel_sheets(path: str) -> List[str]:
+    """Sheet names of a workbook. An empty list for anything that is not one."""
+    if os.path.splitext(path)[1].lower() not in EXCEL_EXTENSIONS:
+        return []
+    try:
+        with pd.ExcelFile(path) as workbook:
+            return [str(name) for name in workbook.sheet_names]
+    except ImportError:
+        raise DataFileError("Reading Excel files needs one more package. Run: pip install openpyxl")
+    except Exception as error:
+        raise DataFileError(
+            f"Could not read {os.path.basename(path)}. It may be open in Excel, "
+            f"password protected or damaged ({error})."
+        )
+
+
+def load_file(path: str, sheet: Optional[str] = None) -> pd.DataFrame:
+    """Read CSV, TSV, Excel, JSON or Parquet into a DataFrame. ``sheet`` picks a workbook sheet."""
     if not os.path.isfile(path):
         raise DataFileError(f"There is no file at {path}")
     extension = os.path.splitext(path)[1].lower()
     try:
-        if extension in (".xlsx", ".xlsm", ".xls"):
+        if extension in EXCEL_EXTENSIONS:
             try:
-                return pd.read_excel(path)
+                return pd.read_excel(path, sheet_name=sheet if sheet else 0)
             except ImportError:
                 raise DataFileError("Reading Excel files needs one more package. Run: pip install openpyxl")
         if extension == ".parquet":

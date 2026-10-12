@@ -22,19 +22,23 @@ One job: a person who has just received a data file finds out whether they can u
 
 ## Screens at a glance
 
-There are **8 screens in the app** and **1 public page** outside it. Three exist today in a basic form.
+There are **8 screens in the app** and **1 public page** outside it. As of version 0.3, seven of the eight app screens are built.
 
 | # | Screen | What it is for | Status |
 |:--|:--|:--|:--|
-| 1 | Check | Choose a file to check | Built (basic) |
-| 2 | Result | The verdict and the findings | Built (basic) |
-| 3 | Affected rows | See and download the rows behind a finding | To build |
-| 4 | Save as normal | Review what was learned before saving it | To build |
-| 5 | My datasets | Every kind of file the user has saved, with its last result | To build |
-| 6 | Dataset | History, what normal looks like, and the user's rules for one dataset | To build |
-| 7 | Summary to share | One page to send to whoever produced the file | Built |
-| 8 | Help and privacy | How it works, what the words mean, where data goes | To build |
-| 9 | Public landing page | Explains the product to someone who has never seen it | To build |
+| 1 | Check | Choose a file to check | Built |
+| 2 | Result | The verdict and the findings | Built |
+| 3 | Affected rows | See and download the rows behind a finding | Built |
+| 4 | Save as normal | Review what was learned before saving it | Built |
+| 5 | My datasets | Every kind of file the user has saved, with its last result | Built |
+| 6 | Dataset | History, what normal looks like, and the user's rules for one dataset | Built, except the rule builder (rules are shown, and added by editing the file) |
+| 7 | Summary to share | One page to send to whoever produced the file | Built, without the note field |
+| 8 | Help and privacy | How it works, what the words mean, where data goes | Built |
+| 9 | Public landing page | Explains the product to someone who has never seen it | Separate `website/` project |
+
+**How it is built.** The app is TypeScript and React (`frontend/`), compiled to static files that ship inside the Python package. The Python process serves them and a small JSON API (`pydataquality/server.py`). The visual design follows the "Precision Technical Monochrome" system: white surfaces, hairline borders, near-black ink, and colour used only for the four states (problem, warning, passed, information). Fonts and icons are bundled, so nothing is fetched from the internet.
+
+**Known gaps in 0.3.** Past results can be re-opened only while the app is running (history keeps summaries, not rows). Baselines saved in the app are separate from those saved with `pdq accept`.
 
 Navigation is a single top bar on screens 1 to 6 and 8: **Check · My datasets · Help**. The product name on the left returns to Check.
 

@@ -108,7 +108,7 @@ def save(baseline: Dict, path: str) -> str:
     if os.path.isfile(path):  # keep what the user wrote by hand
         try:
             previous = load(path)
-            for section in ("rules", "ignore"):
+            for section in ("rules", "ignore", "skip"):
                 if section in previous and section not in baseline:
                     baseline[section] = previous[section]
         except Exception:
@@ -282,8 +282,9 @@ def compare(df: pd.DataFrame, kinds: Dict[str, str], baseline: Dict) -> List[Fin
         )
 
     distinct = df[~duplicate_mask(df)] if len(df) else df
+    skipped = {str(c) for c in (baseline.get("skip") or [])}
     for name, info in known.items():
-        if name not in current or len(df) == 0:
+        if name not in current or len(df) == 0 or name in skipped:
             continue
         column = current[name]
         series, kind = df[column], kinds[column]

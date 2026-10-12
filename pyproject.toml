@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pydataquality"
-version = "0.2.0"
+version = "0.3.0"
 authors = [
   {name = "Dominion Akinrotimi", email = "contact.dominionakinrotimi@gmail.com"},
 ]
@@ -41,6 +41,12 @@ dependencies = [
 dev = ["pytest>=6.0", "pytest-cov>=2.0", "black>=21.0", "flake8>=3.9"]
 docs = ["sphinx>=4.0", "sphinx-rtd-theme>=1.0"]
 notebook = ["ipython>=7.0", "jupyter>=1.0"]
+
+[tool.setuptools.packages.find]
+exclude = ["tests*", "examples*", "frontend*", "paperwriting*", "media*", "docs*"]
+
+[tool.setuptools.package-data]
+pydataquality = ["static/app/*", "static/app/assets/*"]
 
 [project.urls]
 Homepage = "https://github.com/DominionAkinrotimi/pydataquality"

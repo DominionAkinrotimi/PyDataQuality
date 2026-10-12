@@ -1,150 +1,173 @@
-# User Guide
+# User guide
 
-Welcome to PyDataQuality! This guide is designed for users of all levels, from beginners running their first check to enterprise engineers building data pipelines.
+PyDataQuality answers two questions about a data file: is anything wrong with it, and is it like the last one? This guide covers everyday use. For a first run, start with the [quickstart](quickstart.md).
 
-## 1. Choose Your Environment
+## Choose how to use it
 
-PyDataQuality works where you work. Choose the method that fits your current task:
+| You are | Use | Start with |
+|:--|:--|:--|
+| Sent spreadsheets and would rather not open a terminal | The browser page | `pdq ui` |
+| Comfortable with a terminal | The command | `pdq check file.csv` |
+| Working in Python or a notebook | The library | `pdq.check(df)` |
+| Running a scheduled job or pipeline | The command's exit code | `pdq check file.csv \|\| exit 1` |
 
-| Environment | Best For... | Recommended Command |
-| :--- | :--- | :--- |
-| **Command Line (CLI)** | Quick checks on CSV files without writing code. ideal for non-programmers or quick audits. | `python cli.py data.csv` |
-| **Jupyter / Colab** | Interactive exploration, visual debugging, and data science workflows. | `pdq.show_report(analyzer)` |
-| **Python Script** | Automated pipelines, airflow DAGs, or production software. | `pdq.generate_report(...)` |
+All four give the same findings.
 
----
+## Reading a result
 
-## 2. Step-by-Step Usage
+Every result starts with a verdict.
 
-### A. The Interactive Notebook User (Jupyter/Colab/Kaggle)
-*Goal: I have a dataframe and I want to see what's wrong with it.*
+| Verdict | Means |
+|:--|:--|
+| `NOT SAFE TO USE` / `PROBLEMS FOUND` | At least one problem. Fix it or get a corrected file before relying on the data. |
+| `CHECK BEFORE USE` / `THINGS TO CHECK` | Only warnings. Probably usable, but look at each one first. |
+| `LOOKS LIKE LAST TIME` / `NOTHING OBVIOUSLY WRONG` | Nothing found. |
 
-1.  **Import**: `import pydataquality as pdq`
-2.  **Load**: `df = pd.read_csv("my_data.csv")`
-3.  **Analyze & View**:
-    ```python
-    # Run analysis
-    analyzer = pdq.analyze_dataframe(df)
+The first wording in each row appears when there is an earlier file to compare with. The second appears on a first check, when the tool can only look for things that are wrong in any file. It never says "safe" without something to compare against.
 
-    # Display interactive dashboard directly in the cell
-    pdq.show_report(analyzer)
-    ```
-    *Result*: A scrolling HTML dashboard appears right in your notebook.
+Findings come in three levels:
 
-### B. The Script / Pipeline User
-*Goal: I want to save a report to disk automatically every night.*
+- **Problems** are almost certainly errors: a missing column, repeated IDs, impossible values.
+- **Warnings** are worth a look: unusual spellings, invalid emails, a big change in row count.
+- **Also noted** are facts that may be fine: a column that is 8% empty, a few large values. They never change the verdict.
 
-1.  **Analyze**:
-    ```python
-    analyzer = pdq.analyze_dataframe(df)
-    ```
-2.  **Save Report**:
-    ```python
-    # Save as independent HTML file (easy to email or host)
-    pdq.generate_report(analyzer, output_path="daily_report.html")
-    ```
-    *Result*: A `daily_report.html` file is created.
+To see how any finding was decided, add `--why`.
 
-### C. The Command Line User
-*Goal: I just downloaded `data.csv` and want to check quality instantly.*
+## Working with baselines
 
-1.  **Open Terminal**.
-2.  **Run**:
-    ```bash
-    python cli.py data.csv --output report.html
-    ```
-    *Result*: The tool reads the file, calculates stats, and saves `report.html`.
+A baseline is what PyDataQuality remembers about a file you approved.
 
----
+- **Create or replace one:** `pdq accept orders.csv`
+- **Where it is kept:** in a `.pdq` folder next to your data, as `orders.yml`. From the browser page, in `.pydataquality/baselines` in your home folder.
+- **How the next file finds it:** by name. Dates, month names, numbers and words like "final" or "copy" are ignored, so `orders_november_2026.csv` matches the baseline from `orders_october_2026.csv`. If the name does not match, the saved baseline with the most similar columns is used.
+- **If the wrong one is picked:** name it yourself with `pdq accept orders.csv --as orders` and `pdq check file.csv --baseline orders`.
+- **To check without comparing:** `pdq check file.csv --no-baseline`
+- **To start again:** delete the `.yml` file.
 
-## 3. Function Cookbook (When to use what?)
+The baseline is a short text file. You can open it, read it and edit it.
 
-### Core Functions
+## Your own rules
 
-| Function | When to use it | Expected Output |
-| :--- | :--- | :--- |
-| `analyze_dataframe(df)` | **Always**. This is the first step. It runs all the math. | An `Analyzer` object containing all stats. |
-| `quick_quality_check(df)` | When you just want to print a summary to the console (no HTML). | None (Prints text to screen). |
-| `show_report(analyzer)` | In **Jupyter/Colab** only. | Displays HTML dashboard in output cell. |
-| `generate_report(analyzer)` | When you need to **save** the file to share later. | A `.html` or `.txt` file on disk. |
+Add a `rules` section to the baseline file:
 
-### Utilities (Combine these!)
-
-**Scenario: "My file is too big (1GB+)"**
-*Combine `sample_large_dataset` + `analyze_dataframe`*
-```python
-# 1. Sample it first (Smart batching)
-df_small = pdq.sample_large_dataset("big_file.csv", n_samples=10000)
-# 2. Analyze the sample
-analyzer = pdq.analyze_dataframe(df_small)
+```yaml
+rules:
+  price: [greater than 0]
+  order_id: [unique, not empty]
+  status: [one of paid, pending, refunded]
+  ship_date: [on or after order_date]
 ```
 
-**Scenario: "I need to check for changes since last week"**
-*Combine `compare_reports`*
-```python
-# Compare two analyzers
-drift_df = pdq.compare_reports(analyzer_old, analyzer_new)
-print(drift_df)
+| Rule | Meaning |
+|:--|:--|
+| `unique` | no value appears twice |
+| `not empty` | no missing values |
+| `greater than N`, `at least N`, `less than N`, `at most N` | numeric limits |
+| `between A and B` | inclusive range |
+| `one of a, b, c` | allowed values, ignoring capital letters |
+| `is email`, `is date` | format checks |
+| `on or after X`, `on or before X`, `after X`, `before X` | X is a date, another column, or `today` |
+| `not in the future` | dates up to now |
+| `matches REGEX` | a full regular-expression match |
+
+Rows that break a rule are reported as problems. If a rule is mistyped, you are told. It is never skipped silently.
+
+To try a rule once without editing anything:
+
+```bash
+pdq check orders.csv --rule "price: greater than 0"
 ```
 
----
+## Silencing a finding
 
-## 5. Advanced Workflows
+If a finding is correct but you have decided it is fine, find its key with `--why` (for example `spelling:country`) and add it to the baseline:
 
-### Extracting Bad Data for Remediation
-You found 500 outliers in 'Age'. Now what? required to fix them?
-Use `get_problematic_rows` to extract them into a new dataframe for cleaning.
-
-```python
-# 1. Identify issues
-analyzer = pdq.analyze_dataframe(df)
-
-# 2. Extract rows with invalid ages
-bad_age_rows = analyzer.get_problematic_rows('Age', issue_type='outliers')
-
-# 3. Inspect or Fix
-print(f"Found {len(bad_age_rows)} bad rows")
-bad_age_rows.to_csv("ages_to_fix.csv")
+```yaml
+ignore:
+  - spelling:country
 ```
 
-### Getting AI Assistance for Fixes
-Need help writing code to fix the issues? Generate an AI prompt:
+The result then says how many findings were hidden, so nothing disappears without trace. Your `rules` and `ignore` sections are kept when you run `pdq accept` again.
 
-```python
-# Generate AI remediation prompt
-prompt = pdq.generate_ai_prompt(analyzer)
-print(prompt)
+## Looking at one thing
 
-# Copy the output and paste into ChatGPT, Claude, or Gemini
-# Example output:
-# "I have a dataset 'Sales Data' with 1000 rows. It has critical quality 
-# issues in columns: age (outliers), price (missing_values). Please write 
-# a Python script using pandas to clean this dataset..."
+```bash
+pdq check orders.csv --column price          # one column
+pdq check orders.csv --only duplicates       # one kind of finding
 ```
 
-### Supported File Formats
-PyDataQuality supports any format pandas can read.
-*   **CLI**: Auto-detects `.csv`, `.xlsx`, `.xls`, `.json`, `.parquet`.
-*   **Python**: Pass any pandas DataFrame (read from SQL, API, Snowflake, etc.).
+## In a scheduled job or pipeline
 
----
+`pdq check` exits with:
 
-## 6. Troubleshooting & FAQ
+| Code | Meaning |
+|:--|:--|
+| 0 | nothing found |
+| 1 | warnings only |
+| 2 | problems |
+| 3 | the file or its baseline could not be read |
 
-### How to Fix Common Errors
+```bash
+# Stop on problems, continue on warnings
+pdq check incoming/orders.csv
+if [ $? -ge 2 ]; then exit 1; fi
+```
 
-**Error: "MemoryError" or "Kernel Died"**
-*   **Why**: Your dataset is too big for your computer's RAM.
-*   **Fix**: Do not read the whole file. Use `pdq.sample_large_dataset('file.csv')` instead of `pd.read_csv()`.
+For machine-readable output use `--json`.
 
-**Error: "Visualizations check failed"**
-*   **Why**: You might be on a server without a screen (headless).
-*   **Fix**: The library handles this automatically, but if you see issues, try `analyzer = pdq.analyze_dataframe(df)` (without extra plotting commands) first.
+## In Python
 
-**Error: "Stratified sampling failed"**
-*   **Why**: You tried to stratify by a column like "ID" that is unique for every row.
-*   **Fix**: Only stratify by "Category", "Region", or "Status" columns (few unique values).
+```python
+import pydataquality as pdq
 
-**Question: Can I use this with Excel?**
-*   **Yes**: Just read it with pandas first: `df = pd.read_excel("data.xlsx")`, then pass `df` to PyDataQuality.
+result = pdq.check(df, baseline="baselines/orders.yml",
+                   rules={"price": ["greater than 0"]})
 
+if not result:                       # a result is true only when nothing was found
+    print(result.headline)
+    for finding in result.problems:
+        print(finding.column, finding.message)
+    result.bad_rows().to_csv("to_fix.csv", index=False)
+```
+
+See the [API reference](api.md).
+
+## Privacy and safety
+
+- Everything runs on your computer. PyDataQuality makes no network requests and has no account or telemetry.
+- `pdq ui` serves its page on `127.0.0.1`, which only your own computer can reach. It refuses requests from other sites open in your browser.
+- Files dropped on the page are read and then deleted from a temporary folder. Only a small baseline file is kept, and only if you ask.
+- The summary from `pdq report` contains the findings and example values, not your rows. Read it before forwarding if the examples could be sensitive.
+
+## Troubleshooting
+
+**"Could not read file.xlsx"**
+The file may be open in Excel, password protected or damaged. Close it and try again. For `.xls` files from old versions of Excel, save as `.xlsx` first.
+
+**"Reading Parquet files needs one more package"**
+Run `pip install pyarrow`.
+
+**The columns look wrong, or everything is in one column**
+The file probably has title rows above the header. Remove them, or save the sheet as CSV with the header on the first line. Separators `,` `;` tab and `|` are detected automatically.
+
+**Only the first sheet of my workbook was checked**
+That is the current behaviour. Save the sheet you need as its own file.
+
+**It compared with the wrong earlier file**
+Use `--baseline NAME`, or `--no-baseline` to skip the comparison. See "Working with baselines" above.
+
+**"The baseline file could not be read"**
+The `.yml` file was damaged, usually by a hand edit. Fix the edit, or delete the file and run `pdq accept` again.
+
+**It flagged something that is fine**
+Run `pdq accept` if the whole file is the new normal, or add the finding to the `ignore` list. If it is a false alarm on data that is plainly correct, please [report it](https://github.com/DominionAkinrotimi/PyDataQuality/issues) with a small example.
+
+**The file is very large**
+Files are read into memory, so a file close to the size of your computer's memory will fail or be very slow. For files of several gigabytes, check a sample: `pdq.check(pdq.sample_large_dataset("big.csv", n_samples=100000))`.
+
+**`pdq` is not recognised**
+Use `python -m pydataquality.pdq_cli check file.csv`, or make sure Python's scripts folder is on your PATH.
+
+## The profiling interface
+
+The original interface for a detailed statistical profile of one DataFrame is still included: `analyze_dataframe`, `generate_report`, `create_visual_report`, `compare_drift`, and the `pydataquality` command. It is documented in the [API reference](api.md).

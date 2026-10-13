@@ -5,7 +5,8 @@ import { MotionConfig, motion, useMotionValueEvent, useScroll } from "motion/rea
 import { ShieldCheck } from "lucide-react";
 import "./index.css";
 import { Hero } from "./sections/Hero";
-import { Finds, Problem } from "./sections/Finds";
+import { Finds } from "./sections/Finds";
+import { Answers, Engine, Outcomes } from "./sections/Solution";
 import { Tour } from "./sections/Tour";
 import { Paper } from "./sections/Paper";
 import { CallToAction, Fit, Questions, Ways } from "./sections/Closing";
@@ -44,9 +45,9 @@ function Nav() {
       >
         <Logo />
         <nav aria-label="Main" className="hidden items-center gap-7 text-[14.5px] text-fog lg:flex">
-          <a className="transition-colors hover:text-white" href="#finds">What it finds</a>
+          <a className="transition-colors hover:text-white" href="#answer">What you get</a>
           <a className="transition-colors hover:text-white" href="#tour">The app</a>
-          <a className="transition-colors hover:text-white" href="#how">How it works</a>
+          <a className="transition-colors hover:text-white" href="#inside">How it works</a>
           <a className="transition-colors hover:text-white" href="#faq">Questions</a>
         </nav>
         <div className="flex items-center gap-2">
@@ -104,7 +105,7 @@ function useStagedSections(total: number): number {
   return count;
 }
 
-const LATER: ReactNode[] = [<Finds />, <Problem />, <Tour />, <Paper />, <Ways />, <Fit />, <Questions />, <CallToAction />];
+const LATER: ReactNode[] = [<Outcomes />, <Finds />, <Tour />, <Paper />, <Engine />, <Answers />, <Ways />, <Fit />, <Questions />, <CallToAction />];
 
 function App() {
   const shown = useStagedSections(LATER.length + 1);

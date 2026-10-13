@@ -43,7 +43,7 @@ TOKEN_PLACEHOLDER = "__PDQ_TOKEN__"
 
 # Short label shown beside each finding
 CATEGORIES = {
-    "no_rows": "Structure", "no_header": "Structure", "empty_column": "Structure",
+    "no_rows": "Structure", "no_header": "Structure", "table_start": "Structure", "empty_column": "Structure",
     "column_missing": "Structure", "column_new": "Structure", "type_changed": "Structure",
     "row_count": "Volume", "same_file": "Volume",
     "duplicates": "Duplicates", "id_repeats": "Identifiers", "not_unique": "Identifiers",

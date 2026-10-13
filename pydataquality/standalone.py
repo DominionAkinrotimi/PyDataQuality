@@ -60,20 +60,41 @@ def num(value) -> str:
     return f"{value:.6g}" if abs(value) < 10000 else f"{value:,.6g}"
 
 
-def show(values, limit=3) -> str:
+def show(values, limit=3, width=40) -> str:
     """Quote a few example values for a message."""
     seen = []
     for value in values:
         if isinstance(value, float) and value.is_integer():
             value = int(value)
         text = str(value)
-        if len(text) > 40:
-            text = text[:37] + "..."
+        if len(text) > width:
+            text = text[: width - 3] + "..."
         if text not in seen:
             seen.append(text)
         if len(seen) == limit:
             break
     return ", ".join(f'"{v}"' for v in seen)
+
+
+SPELLING_MAX_LENGTH = 30  # average characters; longer than this is free text, not a label
+
+
+def either_or_columns(df: pd.DataFrame) -> set:
+    """
+    Columns that come as a pair where each row fills in one or the other, such
+    as Debit and Credit on a statement. Each is half empty on purpose, so being
+    empty is not something to report.
+    """
+    empty = {c: df[c].isna() for c in df.columns}
+    partly = [c for c, mask in empty.items() if 0.05 <= mask.mean() <= 0.95]
+    paired = set()
+    if len(partly) > 40:
+        return paired
+    for i, a in enumerate(partly):
+        for b in partly[i + 1:]:
+            if (empty[a] ^ empty[b]).mean() >= 0.98:
+                paired.update((a, b))
+    return paired
 
 
 def duplicate_mask(df: pd.DataFrame) -> pd.Series:
@@ -169,9 +190,14 @@ def check_unique_id(df: pd.DataFrame, column, kind: str) -> List[Finding]:
 
 def check_spelling(df: pd.DataFrame, column, kind: str) -> List[Finding]:
     """The same value written with different capitals or spacing."""
-    if kind not in (sem.CATEGORY, sem.TEXT):
+    # Only for columns that hold a short list of labels, such as a country or a
+    # status. In free text (a payment description, a comment) two entries that
+    # differ in capitals are not a mistake worth reporting.
+    if kind != sem.CATEGORY:
         return []
     values = df[column].dropna().astype(str)
+    if len(values) == 0 or values.str.len().mean() > SPELLING_MAX_LENGTH:
+        return []
     counts = values.value_counts()
     if len(counts) > 5000:
         return []
@@ -190,7 +216,7 @@ def check_spelling(df: pd.DataFrame, column, kind: str) -> List[Finding]:
     return [
         Finding(
             WARNING, "spelling", str(column),
-            f"{column} has {len(first)} spellings of the same value: {show(first, 4)}{more}. "
+            f"{column} has {len(first)} spellings of the same value: {show(first, 4, width=80)}{more}. "
             f"{n(len(affected), 'row uses', 'rows use')} a less common spelling.",
             count=len(affected), examples=first[:5], rows=affected.index,
             why="Values are compared after removing extra spaces and ignoring capital letters.",
@@ -430,6 +456,7 @@ def run_standalone(df: pd.DataFrame, kinds: Dict[str, str], today=None, baseline
     findings = check_structure(df, kinds)
     if len(df) == 0:
         return findings
+    either_or = either_or_columns(df)
     for column in df.columns:
         kind = kinds[column]
         found = []
@@ -441,7 +468,8 @@ def run_standalone(df: pd.DataFrame, kinds: Dict[str, str], today=None, baseline
         impossible = check_impossible(df, column, kind)
         found += impossible
         if column not in baselined:
-            found += check_missing(df, column, kind)
+            if column not in either_or:
+                found += check_missing(df, column, kind)
             flagged = set()
             for finding in impossible:
                 flagged.update(finding.rows)

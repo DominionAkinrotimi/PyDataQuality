@@ -82,9 +82,11 @@ The first time, there is nothing to compare with, so PyDataQuality looks for wha
 | Mixed or broken dates | `visit_date mixes 2 date formats. Most look like 2024-01-31, but 3 rows look like "05/01/2026".` |
 | Invalid emails | `email has 31 values that are not email addresses, e.g. "not-an-email".` |
 | One value spelled several ways | `country has 3 spellings of the same value: "Nigeria", "NIGERIA", "nigeria ".` |
-| Numbers stored as text | `amount is mostly numbers, but 1 value is not: "N/A".` |
+| Numbers stored as text | `amount is mostly numbers, but 1 value is not: "TBC".` |
 | Wildly out-of-range numbers | `y has 2 values wildly outside the usual range (most rows are between 4.72 and 6.54): "58.9", "31.8".` |
 | Empty or mostly empty columns | `deck is empty in 688 rows (77%).` |
+
+Real files are rarely tidy, so it copes with the usual mess: a title block above the table is skipped (and it tells you which row the table starts on), `--`, `-` and `N/A` in a number or date column count as empty, a pair of columns where each row fills in only one (debit and credit) is not reported as half empty, and long reference or account numbers are treated as labels, not amounts. If it cannot find the column headings at all, it says so and stops.
 
 It works out what each column is (an identifier, a date, an email, a category, a number) before judging it, so it does not, for example, run outlier detection on ID numbers. It is deliberately quiet: a clean file gets `NOTHING OBVIOUSLY WRONG`.
 

@@ -52,6 +52,10 @@ FUTURE_DATE_TOKENS = {
     "departure", "arrival", "checkout", "checkin", "event", "start", "eta",
     "estimated", "expected",
 }
+REFERENCE_TOKENS = {
+    "reference", "ref", "account", "acct", "phone", "mobile", "tel", "telephone",
+    "zip", "postcode", "postal", "barcode", "sku", "serial", "iban", "bvn", "nin",
+}
 NON_NEGATIVE_TOKENS = {
     "price", "qty", "quantity", "count", "salary", "weight", "height",
     "duration", "distance", "age", "population", "stock", "units",
@@ -70,6 +74,43 @@ def _sample(series: pd.Series) -> pd.Series:
     if len(series) > SAMPLE_SIZE:
         return series.sample(SAMPLE_SIZE, random_state=0)
     return series
+
+
+# What people type into a cell to mean "nothing here"
+PLACEHOLDERS = {"--", "-", "\u2014", "\u2013", "n/a", "na", "#n/a", "nil", "null", "none"}
+
+
+def placeholder_mask(series: pd.Series) -> pd.Series:
+    """True where a cell holds only a stand-in for an empty value, such as "--" or "N/A"."""
+    text = series.astype("object").where(series.notna(), "").astype(str).str.strip().str.lower()
+    return text.isin(PLACEHOLDERS)
+
+
+def blank_placeholders(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Treat "--", "-", "N/A" and the like as empty, in columns that otherwise hold
+    numbers or dates. A bank statement writes "--" in the debit column of every
+    credit row; that is an empty cell, not a value that fails to be a number.
+    Text columns are left alone, because there a dash can be a real value.
+    """
+    changed = None
+    for column in df.columns:
+        series = df[column]
+        if not (pd.api.types.is_object_dtype(series) or pd.api.types.is_string_dtype(series)):
+            continue
+        mask = placeholder_mask(series)
+        if not mask.any():
+            continue
+        rest = _sample(as_text(series[~mask]))
+        rest = rest[rest != ""]
+        if len(rest) == 0:
+            continue
+        if to_number(rest).notna().mean() >= 0.8 or date_shapes(rest).notna().mean() >= 0.8:
+            if changed is None:
+                changed = df.copy()
+                changed.attrs = dict(df.attrs)
+            changed[column] = series.astype("object").mask(mask)
+    return df if changed is None else changed
 
 
 def as_text(series: pd.Series) -> pd.Series:
@@ -111,6 +152,12 @@ def to_number(text: pd.Series) -> pd.Series:
     return pd.to_numeric(cleaned, errors="coerce")
 
 
+def _long_digit_strings(sample: pd.Series) -> bool:
+    """Mostly runs of 12 or more digits: reference numbers, not amounts."""
+    digits = sample[sample.str.fullmatch(r"\d+")]
+    return len(digits) >= 0.5 * len(sample) and digits.str.len().median() >= 12
+
+
 def _looks_like_id(name, values: pd.Series) -> bool:
     if len(values) < 20:
         return bool(name_tokens(name) & ID_TOKENS) and values.is_unique
@@ -148,6 +195,11 @@ def infer_kind(series: pd.Series, name="") -> str:
     if date_shapes(sample).notna().mean() >= 0.8:
         return DATE
     if to_number(sample).notna().mean() >= 0.8:
+        # Digits are not always a quantity. A reference, an account or a phone
+        # number is a label: nobody adds them up, and one that contains a
+        # letter is not a mistake.
+        if name_tokens(name) & REFERENCE_TOKENS or _long_digit_strings(sample):
+            return TEXT
         return NUMBER_AS_TEXT
     if set(sample.str.lower().unique()) <= {"true", "false", "yes", "no", "y", "n"}:
         return BOOLEAN

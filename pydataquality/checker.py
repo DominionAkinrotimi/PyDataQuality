@@ -6,9 +6,11 @@ worst first, and can hand back the affected rows with the reason for each.
 """
 
 import csv
+import io
 import os
 from typing import Dict, Iterable, List, Optional, Union
 
+import numpy as np
 import pandas as pd
 
 from . import baseline as base
@@ -54,15 +56,92 @@ def excel_sheets(path: str) -> List[str]:
         )
 
 
+HEADER_SEARCH_ROWS = 40
+
+
+def _blank(cell) -> bool:
+    return cell is None or (isinstance(cell, float) and cell != cell) or str(cell).strip() == ""
+
+
+def _heading_like(cell) -> bool:
+    """A cell that could be a column heading: short text that is not a number or a date."""
+    if not isinstance(cell, str):
+        return False
+    text = cell.strip()
+    if not text or len(text) > 60:
+        return False
+    one = pd.Series([text])
+    return bool(sem.to_number(one).isna().iloc[0]) and sem.date_shape(text) is None
+
+
+def _data_like(cell) -> bool:
+    if _blank(cell):
+        return False
+    if not isinstance(cell, str):
+        return True  # a real number, date or yes/no from a spreadsheet
+    text = cell.strip()
+    return bool(sem.to_number(pd.Series([text])).notna().iloc[0]) or sem.date_shape(text) is not None
+
+
+def find_header_row(rows: List[list]) -> int:
+    """
+    Which of the first rows holds the column headings (0 for the first row).
+
+    Statements and exported reports often start with a title block: the account
+    name, a period, some totals, then a blank line, and only then the table. The
+    heading row is taken to be the first row that is as wide as the table, holds
+    only short text, and sits directly above rows of data with numbers or dates
+    in them. If the first row is already as wide as the table it is kept, so an
+    ordinary file is read exactly as before.
+    """
+    filled = [sum(1 for cell in row if not _blank(cell)) for row in rows]
+    width = max(filled) if filled else 0
+    if width < 2:
+        return 0
+    wide = max(2, int(np.ceil(0.8 * width)))
+    if filled[0] >= wide:
+        return 0
+    for i in range(1, len(rows)):
+        cells = [cell for cell in rows[i] if not _blank(cell)]
+        if len(cells) < wide or not all(_heading_like(cell) for cell in cells):
+            continue
+        if len({str(cell).strip().lower() for cell in cells}) != len(cells):
+            continue
+        below = [row for row in rows[i + 1: i + 11] if any(not _blank(cell) for cell in row)]
+        if not below or sum(1 for cell in below[0] if not _blank(cell)) < wide:
+            continue
+        # at least one column under these headings must hold numbers or dates
+        columns = range(min(len(row) for row in below))
+        if any(sum(_data_like(row[c]) for row in below) >= 0.8 * len(below) for c in columns):
+            return i
+    return 0
+
+
+def _with_header_row(df: pd.DataFrame, skipped: int) -> pd.DataFrame:
+    """Number the rows as the file does, and remember where the table started."""
+    if skipped:
+        df.index = df.index + skipped
+        df.attrs["header_row"] = skipped + 1
+    return df
+
+
 def load_file(path: str, sheet: Optional[str] = None) -> pd.DataFrame:
-    """Read CSV, TSV, Excel, JSON or Parquet into a DataFrame. ``sheet`` picks a workbook sheet."""
+    """
+    Read CSV, TSV, Excel, JSON or Parquet into a DataFrame. ``sheet`` picks a workbook sheet.
+
+    A title block above the table is skipped (see ``find_header_row``). The row
+    the headings were found on is kept in ``df.attrs["header_row"]``.
+    """
     if not os.path.isfile(path):
         raise DataFileError(f"There is no file at {path}")
     extension = os.path.splitext(path)[1].lower()
     try:
         if extension in EXCEL_EXTENSIONS:
             try:
-                return pd.read_excel(path, sheet_name=sheet if sheet else 0)
+                which = sheet if sheet else 0
+                top = pd.read_excel(path, sheet_name=which, header=None, nrows=HEADER_SEARCH_ROWS)
+                skipped = find_header_row(top.values.tolist())
+                return _with_header_row(pd.read_excel(path, sheet_name=which, skiprows=skipped), skipped)
             except ImportError:
                 raise DataFileError("Reading Excel files needs one more package. Run: pip install openpyxl")
         if extension == ".parquet":
@@ -89,7 +168,11 @@ def _read_delimited(path: str) -> pd.DataFrame:
                 separator = csv.Sniffer().sniff(head, delimiters=",;\t|").delimiter
             except csv.Error:
                 separator = "\t" if path.lower().endswith(".tsv") else ","
-            return pd.read_csv(path, sep=separator, encoding=encoding)
+            top = list(csv.reader(io.StringIO(head), delimiter=separator))[:HEADER_SEARCH_ROWS]
+            if len(head) >= 64 * 1024 and top:
+                top = top[:-1]  # the last line of the sample may be cut off
+            skipped = find_header_row(top) if top else 0
+            return _with_header_row(pd.read_csv(path, sep=separator, encoding=encoding, skiprows=skipped), skipped)
         except UnicodeDecodeError as error:
             last_error = error
     raise last_error
@@ -330,6 +413,22 @@ def check(
         raise TypeError("check() needs a file path or a pandas DataFrame")
     label = name or (os.path.basename(path) if path else "DataFrame")
 
+    # Without column headings nothing sensible can be said about the columns,
+    # so say that and stop, instead of reporting on "Unnamed: 2".
+    unnamed = [c for c in df.columns if str(c).startswith("Unnamed:")]
+    if len(df) and len(unnamed) >= max(2, (len(df.columns) + 1) // 2):
+        stop = Finding(
+            PROBLEM, "no_header", ALL_COLUMNS,
+            f"The column headings could not be found: {n(len(unnamed), 'column')} of {len(df.columns)} "
+            f"{'has' if len(unnamed) == 1 else 'have'} no heading, so the file was not checked. "
+            "Put the headings in the first row of the table and check it again.",
+            count=len(unnamed),
+            why="The first row with something in every column is read as the headings. Here most of that row was empty.",
+        )
+        return CheckResult(df, [stop], label, kinds={c: sem.TEXT for c in df.columns})
+
+    header_row = int(df.attrs.get("header_row", 1))
+    df = sem.blank_placeholders(df)
     kinds = sem.infer_kinds(df)
     known, source = (None, None) if baseline is False else _resolve_baseline(baseline, path, df.columns)
 
@@ -350,6 +449,16 @@ def check(
         existing = [existing] if isinstance(existing, str) else list(existing)
         all_rules[column] = existing + extra
     findings += base.check_rules(df, all_rules)
+    if header_row > 1:
+        findings.append(
+            Finding(
+                NOTE, "table_start", ALL_COLUMNS,
+                f"The table starts on row {header_row}. The {n(header_row - 1, 'row')} above it "
+                f"{'was' if header_row == 2 else 'were'} read as a title and left out.",
+                count=header_row - 1,
+                why="The headings are taken from the first row that is as wide as the table and sits above rows of data.",
+            )
+        )
 
     ignored = {str(item).strip() for item in ((known or {}).get("ignore") or [])}
     kept = [f for f in findings if f.key not in ignored]

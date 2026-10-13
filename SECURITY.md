@@ -7,6 +7,8 @@
 - Files dropped on the page are written to a temporary folder, read, and deleted. Only the most recent result is held in memory.
 - Baseline files are read with a safe YAML loader. They hold column names, types, ranges, category values and row counts, not your rows.
 - Everything taken from a data file is HTML-escaped before it is shown in the page or the shareable summary.
+- “This is wrong” on a finding prepares a short report for you to send yourself, by email or on GitHub. It holds the kind of finding, the kind of column, row and column counts, and the version. It never holds a value from the file, a column name or a file name, and the app does not send it. A test fills a file with recognisable values and checks that none appear in any report.
+- The project counts downloads using the totals that GitHub and PyPI publish, saved once a day to the `stats` branch. It has no information about who downloaded anything or how the app is used.
 
 ## What to be aware of
 

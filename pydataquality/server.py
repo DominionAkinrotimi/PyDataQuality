@@ -28,6 +28,7 @@ import pandas as pd
 
 from . import baseline as base
 from . import fixer
+from .feedback import false_alarm_report
 from . import semantic as sem
 from .checker import CheckResult, DataFileError, check, excel_sheets, load_file
 from .standalone import ALL_COLUMNS, NOTE
@@ -349,6 +350,16 @@ class App:
         result: CheckResult = self._held(result_id)["result"]
         stem = os.path.splitext(safe_filename(result.name))[0]
         return report_html(result), f"{stem}_check.html"
+
+    # -- telling the makers -----------------------------------------------
+    def feedback(self, result_id: str, finding: str) -> Dict:
+        """A false-alarm report for one finding. Built here, shown in full, and sent by nobody but the user."""
+        result: CheckResult = self._held(result_id)["result"]
+        try:
+            chosen = result.findings[int(finding)]
+        except (ValueError, IndexError):
+            raise NotFound("That finding is not in this result.")
+        return {"report": false_alarm_report(result, chosen, CATEGORIES.get(chosen.code, ""))}
 
     # -- fixing -----------------------------------------------------------
     def fixes(self, result_id: str) -> Dict:
@@ -701,6 +712,8 @@ def _make_handler(app: App):
                 if path == "/download/rows":
                     body, name = app.rows_csv(query.get("id", ""), query.get("finding", "all"))
                     return self._send(200, body, "text/csv", {"Content-Disposition": f'attachment; filename="{name}"'})
+                if path == "/api/feedback":
+                    return self._json(200, app.feedback(query.get("id", ""), query.get("finding", "")))
                 if path == "/api/fixes":
                     return self._json(200, app.fixes(query.get("id", "")))
                 if path == "/download/fixed":

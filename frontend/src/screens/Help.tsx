@@ -1,7 +1,7 @@
 // Screen 8: how it works and where data goes.
 
 import { useState, type ReactNode } from "react";
-import { api, type Verdict } from "../api";
+import { FEEDBACK_ISSUES, api, mailto, type Verdict } from "../api";
 import { Notice, Page, VerdictBadge, href, useLoad } from "../ui";
 
 const RELEASES = "https://github.com/DominionAkinrotimi/PyDataQuality/releases/latest";
@@ -113,9 +113,26 @@ export function Help() {
         <Section title="When it gets something wrong">
           <ul className="flex list-disc flex-col gap-1.5 pl-5 text-muted">
             <li>If the whole file is fine, save it as the new normal.</li>
+            <li>If a finding is simply wrong, use “This is wrong” on it to prepare a report you can send us. It holds no values from your file.</li>
             <li>If one finding is fine, use “This is fine” on it. It stops being reported for that dataset, and you can turn it back on under <a className="underline" href={href("datasets")}>My datasets</a>.</li>
             <li>Title rows above the table are skipped, and the result says which row the table starts on. If the column names still look wrong, put the headings in the first row and try again.</li>
             <li>If a file cannot be read, it may be open in Excel, password protected or damaged.</li>
+          </ul>
+        </Section>
+
+        <Section title="Tell us how it went">
+          <p>
+            PyDataQuality cannot see whether it helped you, because nothing leaves your computer. The only way we find
+            out is if you tell us.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <a className="btn-outline" href={mailto("PyDataQuality: how it went")}>Send an email</a>
+            <a className="btn-outline" href={FEEDBACK_ISSUES} target="_blank" rel="noreferrer">Write on GitHub</a>
+          </div>
+          <ul className="flex list-disc flex-col gap-1.5 pl-5 text-muted">
+            <li>Say what kind of file it was and what happened. Please do not attach the file or paste values from it.</li>
+            <li>If one finding was wrong, use “This is wrong” on it. It prepares a short report with no values, column names or file name in it, for you to send.</li>
+            <li>GitHub is public. Use email for anything you would not want others to read.</li>
           </ul>
         </Section>
 

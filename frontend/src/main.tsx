@@ -18,7 +18,7 @@ function NavLink({ to, active, children }: { to: string; active: boolean; childr
     <a
       href={to}
       aria-current={active ? "page" : undefined}
-      className={`rounded px-3 py-1.5 text-base2 transition-colors ${
+      className={`whitespace-nowrap rounded px-2 py-1.5 text-base2 transition-colors sm:px-3 ${
         active ? "bg-soft2 font-medium text-ink" : "text-muted hover:text-ink"
       }`}
     >
@@ -32,12 +32,12 @@ function Shell({ section, children }: { section: string; children: ReactNode }) 
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-20 border-b border-line bg-white">
-        <div className="mx-auto flex h-14 max-w-[1280px] items-center justify-between gap-4 px-4 md:px-8">
-          <a href={href()} className="flex items-center gap-2 text-h3 text-ink">
-            <Mark size={34} />
-            PyDataQuality
+        <div className="mx-auto flex h-14 max-w-[1280px] items-center justify-between gap-2 px-3 sm:gap-4 sm:px-4 md:px-8">
+          <a href={href()} className="flex min-w-0 items-center gap-2 text-h3 text-ink">
+            <Mark size={34} className="shrink-0" />
+            <span className="truncate">PyDataQuality</span>
           </a>
-          <nav className="flex items-center gap-1" aria-label="Main">
+          <nav className="flex shrink-0 items-center gap-0.5 sm:gap-1" aria-label="Main">
             <NavLink to={href()} active={section === "check"}>Check</NavLink>
             <NavLink to={href("datasets")} active={section === "datasets"}>My datasets</NavLink>
             <NavLink to={href("help")} active={section === "help"}>Help</NavLink>

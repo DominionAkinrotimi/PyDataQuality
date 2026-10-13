@@ -1,0 +1,50 @@
+name: Record download numbers
+
+# Once a day, saves the download counts that GitHub and PyPI already keep, so
+# the history is not lost. The numbers go to the "stats" branch, not to main.
+# Nothing here comes from the app or from people using it.
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stats
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open the stats branch
+        run: |
+          if git fetch origin stats:stats 2>/dev/null; then
+            git worktree add stats-data stats
+          else
+            git worktree add --detach stats-data
+            cd stats-data
+            git checkout --orphan stats
+            git rm -rfq .
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Record today's numbers
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          TRAFFIC_TOKEN: ${{ secrets.TRAFFIC_TOKEN }}
+        run: python .github/scripts/record_stats.py stats-data
+      - name: Save them
+        working-directory: stats-data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Numbers for $(date -u +%F)" || { echo "Nothing new to save."; exit 0; }
+          git push origin stats

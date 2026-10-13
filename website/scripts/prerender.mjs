@@ -18,13 +18,12 @@ const software = {
   url: SITE,
   applicationCategory: "BusinessApplication",
   operatingSystem: "Windows, macOS, Linux",
-  softwareRequirements: "Python 3.8 or newer",
-  license: "https://opensource.org/licenses/MIT",
+    license: "https://opensource.org/licenses/MIT",
   isAccessibleForFree: true,
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   author: { "@type": "Person", name: "Dominion Akinrotimi" },
   codeRepository: "https://github.com/DominionAkinrotimi/PyDataQuality",
-  downloadUrl: "https://pypi.org/project/pydataquality/",
+  downloadUrl: "https://github.com/DominionAkinrotimi/PyDataQuality/releases/latest",
   screenshot: SITE + "og.png",
 };
 

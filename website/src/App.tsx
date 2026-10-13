@@ -46,14 +46,14 @@ function Nav() {
           <a className="transition-colors hover:text-white" href="#answer">What you get</a>
           <a className="transition-colors hover:text-white" href="#tour">The app</a>
           <a className="transition-colors hover:text-white" href="#inside">How it works</a>
-          <a className="transition-colors hover:text-white" href="#start">Install</a>
+          <a className="transition-colors hover:text-white" href="#start">Download</a>
           <a className="transition-colors hover:text-white" href="#faq">Questions</a>
         </nav>
         <div className="flex items-center gap-2">
           <a href={LINKS.github} className="btn-ghost !min-h-[44px] !px-3.5 text-[14px]" aria-label="PyDataQuality on GitHub">
             <GithubMark /> <span className="hidden sm:inline">GitHub</span>
           </a>
-          <a href="#start" className="btn-white !min-h-[44px] !px-4 text-[14px]">Get started</a>
+          <a href="#start" className="btn-white !min-h-[44px] !px-4 text-[14px]">Download</a>
         </div>
       </div>
     </motion.header>

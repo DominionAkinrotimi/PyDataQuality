@@ -1,8 +1,8 @@
 import { StrictMode, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
-import { ShieldCheck } from "lucide-react";
 import "./index.css";
 import { api } from "./api";
+import { Mark } from "./Mark";
 import { href, useLoad, useRoute } from "./ui";
 import { Check } from "./screens/Check";
 import { Result } from "./screens/Result";
@@ -34,9 +34,7 @@ function Shell({ section, children }: { section: string; children: ReactNode }) 
       <header className="sticky top-0 z-20 border-b border-line bg-white">
         <div className="mx-auto flex h-14 max-w-[1280px] items-center justify-between gap-4 px-4 md:px-8">
           <a href={href()} className="flex items-center gap-2 text-h3 text-ink">
-            <span className="grid h-7 w-7 place-items-center rounded bg-ink text-white" aria-hidden>
-              <ShieldCheck size={16} />
-            </span>
+            <Mark size={34} />
             PyDataQuality
           </a>
           <nav className="flex items-center gap-1" aria-label="Main">

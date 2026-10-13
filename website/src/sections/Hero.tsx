@@ -1,7 +1,7 @@
 import { Component, Suspense, lazy, useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useInView, useReducedMotion, type Variants } from "motion/react";
-import { ArrowDown, MonitorCheck } from "lucide-react";
-import { CopyCommand } from "@/components/ui";
+import { ArrowDown, Download, MonitorCheck } from "lucide-react";
+import { LINKS } from "@/lib/links";
 import { HeroPoster } from "@/components/HeroPoster";
 import { SAMPLE_VERDICT } from "@/lib/sheet";
 import type { ScenePhase } from "@/three/HeroScene";
@@ -160,7 +160,9 @@ export function Hero() {
             Drop in a spreadsheet or CSV. Get a plain answer in seconds, and the rows that are wrong.
           </motion.p>
           <motion.div variants={rise} className="mt-9 flex flex-wrap items-center gap-3">
-            <CopyCommand command="pip install pydataquality" />
+            <a href={LINKS.windows} className="btn-white min-h-[48px] !px-6">
+              <Download size={17} aria-hidden /> Download for Windows
+            </a>
             <a href="#how" className="btn-ghost min-h-[48px] border-transparent bg-transparent">
               See how it works <ArrowDown size={16} aria-hidden />
             </a>
@@ -168,6 +170,9 @@ export function Hero() {
           <motion.p variants={rise} className="mt-7 flex items-center gap-2.5 text-[14px] text-fog">
             <MonitorCheck size={17} className="shrink-0 text-white/70" aria-hidden />
             Works on a single file. Runs on your computer. Nothing is uploaded.
+          </motion.p>
+          <motion.p variants={rise} className="mt-3 text-[14px] text-fog">
+            Free. Also for <a className="link text-white" href={LINKS.mac}>Mac</a>, or with <a className="link text-white" href="#start">Python</a>.
           </motion.p>
         </motion.div>
 

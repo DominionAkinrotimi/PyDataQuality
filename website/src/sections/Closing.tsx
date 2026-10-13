@@ -1,6 +1,6 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion, useInView } from "motion/react";
-import { ArrowRight, Check, Minus, Plus } from "lucide-react";
+import { Check, Download, Minus, Plus } from "lucide-react";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { CopyCommand, Heading, Reveal, TiltCard } from "@/components/ui";
 import { LINKS } from "@/lib/links";
@@ -119,7 +119,7 @@ export function Fit() {
 export const FAQ: [string, string][] = [
   ["I only have one file. Is that enough?", "Yes. It checks a single file on its own. Comparing with an earlier file is optional."],
   ["Does my file leave my computer?", "No. It makes no requests to the internet, has no account and collects nothing."],
-  ["Do I need to know Python?", "No. Python has to be installed, and you type two commands once. After that you use a page in your browser."],
+  ["Do I need to know Python?", "No. Download the app for Windows or Mac and double-click it. It needs no Python and no terminal."],
   ["How does it know what is wrong?", "It works out what each column holds, then checks it. After you save a file as normal, it also compares each new file with that one."],
   ["What if it flags something that is fine?", "Mark it as fine and it stops being reported for that kind of file."],
   ["What does it save?", "A small text file describing your columns, only when you save a file as normal. Not your rows."],
@@ -181,18 +181,29 @@ export function Questions() {
 }
 
 // ------------------------------------------------------------- get started
-const SETUP: { title: string; text: ReactNode; command?: string }[] = [
-  { title: "Install Python", text: <>Free, from <a className="link text-white" href="https://www.python.org/downloads/">python.org</a>. Version 3.8 or newer.</> },
-  { title: "Install PyDataQuality", text: "Open Terminal on a Mac, or Command Prompt on Windows, and type:", command: "pip install pydataquality" },
-  { title: "Open the app", text: "Type this. A page opens in your browser.", command: "pdq ui" },
+const SETUP: { title: string; text: string }[] = [
+  { title: "Download", text: "One file, about 26 MB. No Python, no terminal." },
+  { title: "Run it", text: "It installs for you only. No administrator password." },
+  { title: "Drop a file in", text: "PyDataQuality opens in your browser. Your file stays on your computer." },
 ];
 
 export function GetStarted() {
   return (
     <section className="later py-24 md:py-36" id="start">
       <div className="wrap">
-        <Heading eyebrow="Get started" title="Two commands, once." lede="There is no installer yet, so setup uses a terminal. After that it is a page in your browser." />
-        <ol className="mt-14 grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-3">
+        <Heading eyebrow="Get started" title="Download it. Double-click. Done." lede="Free, for Windows and Mac." />
+        <Reveal delay={0.05}>
+          <div className="mt-10 flex flex-wrap items-center gap-3">
+            <a href={LINKS.windows} className="btn-white min-h-[52px] !px-6 text-[16px]">
+              <Download size={18} aria-hidden /> Download for Windows
+            </a>
+            <a href={LINKS.mac} className="btn-ghost min-h-[52px] !px-6 text-[16px]">
+              <Download size={18} aria-hidden /> Download for Mac
+            </a>
+          </div>
+          <p className="mt-4 text-[14px] text-fog">Windows 10 or 11. Mac with Apple Silicon (M1 or newer). <a className="link text-white" href={LINKS.releases}>All downloads</a>.</p>
+        </Reveal>
+        <ol className="mt-12 grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-3">
           {SETUP.map((step, i) => (
             <li key={step.title}>
               <Reveal delay={0.08 * i} className="h-full">
@@ -200,12 +211,27 @@ export function GetStarted() {
                   <p className="font-mono text-[12px] text-haze" aria-hidden>{i + 1}</p>
                   <h3 className="mt-3 font-display text-[22px] font-semibold leading-tight tracking-[-0.01em]">{step.title}</h3>
                   <p className="mt-2 text-[15.5px] leading-relaxed text-fog">{step.text}</p>
-                  {step.command && <CopyCommand command={step.command} className="mt-5 w-full justify-between" />}
                 </div>
               </Reveal>
             </li>
           ))}
         </ol>
+        <Reveal delay={0.1}>
+          <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
+            <div className="card p-6 md:p-7">
+              <h3 className="font-display text-[19px] font-semibold tracking-[-0.005em]">Your computer will ask if you are sure</h3>
+              <p className="mt-2 text-[15.5px] leading-relaxed text-fog">
+                The app is new and not yet signed. On Windows, choose <span className="text-white">More info</span>, then <span className="text-white">Run anyway</span>.
+                On a Mac, confirm it in <span className="text-white">System Settings, Privacy &amp; Security</span>.
+              </p>
+            </div>
+            <div className="card p-6 md:p-7">
+              <h3 className="font-display text-[19px] font-semibold tracking-[-0.005em]">Already use Python?</h3>
+              <p className="mt-2 text-[15.5px] leading-relaxed text-fog">Install it with pip, then run <span className="chip-dark">pdq ui</span>.</p>
+              <CopyCommand command="pip install pydataquality" className="mt-4" />
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -224,14 +250,16 @@ export function CallToAction() {
           {seen && <BorderBeam size={360} duration={12} colorFrom="#ffffff" colorTo="#64748b" borderWidth={1.5} />}
           <div className="relative mx-auto max-w-[680px]">
             <h2 className="font-display text-[40px] font-semibold leading-[1.0] tracking-[-0.015em] md:text-[68px]">Check the file you trust least.</h2>
-            <p className="mx-auto mt-6 max-w-[480px] text-[17.5px] text-fog">Install it, run <span className="chip-dark !text-[14px]">pdq ui</span> and drop the file in.</p>
+            <p className="mx-auto mt-6 max-w-[480px] text-[17.5px] text-fog">Download it, open it and drop the file in.</p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-              <CopyCommand command="pip install pydataquality" />
-              <a href="#start" className="btn-white min-h-[48px]">
-                How to install <ArrowRight size={16} aria-hidden />
+              <a href={LINKS.windows} className="btn-white min-h-[52px] !px-6 text-[16px]">
+                <Download size={18} aria-hidden /> Download for Windows
+              </a>
+              <a href={LINKS.mac} className="btn-ghost min-h-[52px] !px-6 text-[16px]">
+                <Download size={18} aria-hidden /> Download for Mac
               </a>
             </div>
-            <p className="mt-7 font-mono text-[12.5px] text-haze">Reads CSV, Excel, JSON and Parquet · MIT licence</p>
+            <p className="mt-7 font-mono text-[12.5px] text-haze">Free · Reads CSV, Excel and JSON · MIT licence</p>
           </div>
         </div>
       </Reveal>

@@ -143,7 +143,7 @@ const headline: Variants = { hidden: { y: 18 }, show: { y: 0, transition: { dura
 
 export function Hero() {
   return (
-    <section id="top" className="grain relative overflow-hidden">
+    <section id="top" className="relative overflow-hidden">
       <div aria-hidden className="grid-floor absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_65%_40%,black,transparent)]" />
       <div aria-hidden className="absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(ellipse_60%_100%_at_70%_0%,rgba(148,163,184,0.16),transparent)]" />
 
@@ -167,7 +167,7 @@ export function Hero() {
           </motion.div>
           <motion.p variants={rise} className="mt-7 flex items-center gap-2.5 text-[14px] text-fog">
             <MonitorCheck size={17} className="shrink-0 text-white/70" aria-hidden />
-            Runs on your computer. Nothing is uploaded.
+            Works on a single file. Runs on your computer. Nothing is uploaded.
           </motion.p>
         </motion.div>
 

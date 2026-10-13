@@ -60,9 +60,9 @@ function PlainLanguage() {
 // -------------------------------------------------------------- how it works
 const STEPS: { title: string; text: string; command: string }[] = [
   { title: "Check", command: "pdq check orders.csv", text: "Drop a file in. Get a verdict." },
-  { title: "Remember", command: "pdq accept orders.csv", text: "Save a good file as normal." },
-  { title: "Check the next one", command: "pdq check orders_november.csv", text: "It is compared automatically." },
-  { title: "Act", command: "pdq rows orders_november.csv", text: "Send the bad rows back." },
+  { title: "Act", command: "pdq rows orders.csv", text: "Get the bad rows, with reasons." },
+  { title: "Share", command: "pdq report orders.csv", text: "One page to send back." },
+  { title: "Remember (optional)", command: "pdq accept orders.csv", text: "If it comes again, it is compared." },
 ];
 
 function HowItWorks() {
@@ -71,7 +71,7 @@ function HowItWorks() {
   const drawn = useSpring(scrollYProgress, { stiffness: 90, damping: 24 });
   return (
     <div className="wrap pb-20 md:pb-28" id="how">
-      <Heading eyebrow="What you do" title="Four steps. You write no rules." lede="A button in the app, or a command." />
+      <Heading eyebrow="What you do" title="Three steps. A fourth if the file comes again." lede="A button in the app, or a command." />
       <ol ref={track} className="relative mt-14 grid gap-10 md:grid-cols-4 md:gap-6">
         {/* The line fills as you scroll: down the side on a phone, across the top on a wide screen. */}
         <span aria-hidden className="absolute bottom-0 left-[15px] top-0 w-px bg-line md:bottom-auto md:left-0 md:right-0 md:top-[15px] md:h-px md:w-auto" />

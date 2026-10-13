@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useInView } from "motion/react";
 import { ArrowRight, Check, Minus, Plus } from "lucide-react";
 import { BorderBeam } from "@/components/magicui/border-beam";
@@ -18,7 +18,7 @@ const WAYS = [
     id: "terminal", label: "In a terminal", command: "pdq check file.csv",
     who: "Quick checks and scheduled jobs.",
     points: ["One command, nothing to configure", "Exit codes 0, 1 and 2 for automation", "Machine-readable output with --json", "Your own rules in plain sentences"],
-    code: `$ pdq check orders.csv --rule "price: greater than 0"\n$ pdq accept orders.csv\n$ pdq rows orders.csv\n$ pdq report orders.csv`,
+    code: `$ pdq check orders_september.csv\n\n✖ NOT SAFE TO USE   3 problems, 1 warning\n\nPROBLEMS\n  1  order_date has 9 dates in the future (latest: 2031-01-09).\n  2  order_id had no repeats last time. Now 1 value appears more than once, e.g. "8252".\n  3  1 column is missing: discount_code. It was in orders_august.csv.\n\nWARNINGS\n  4  country has 1 value never seen before: "Togo" (6 rows).`,
   },
   {
     id: "python", label: "In Python", command: "pdq.check(df)",
@@ -76,12 +76,13 @@ export function Ways() {
 }
 
 // -------------------------------------------------------------- fit and FAQ
-const FITS = ["Analysts with a monthly export", "Finance and operations staff with supplier or bank files", "Researchers with survey downloads", "Anyone who knows Excel and is sent files by other people"];
+const FITS = ["Anyone handed a spreadsheet they have to trust", "Analysts with an export to report on", "Finance and operations staff with supplier or bank files", "Researchers with survey downloads"];
 const NOT = [
   "It does not fix or edit your file.",
   "It does not use AI.",
   "It does not run on a server.",
   "It does not read files larger than memory.",
+  "It cannot tell that a believable value is wrong.",
 ];
 
 export function Fit() {
@@ -115,9 +116,10 @@ export function Fit() {
   );
 }
 
-const FAQ: [string, string][] = [
+export const FAQ: [string, string][] = [
+  ["I only have one file. Is that enough?", "Yes. It checks a single file on its own. Comparing with an earlier file is optional."],
   ["Does my file leave my computer?", "No. It makes no requests to the internet, has no account and collects nothing."],
-  ["Do I need to know Python?", "No. Python is only needed to install it. After that you use a page in your browser."],
+  ["Do I need to know Python?", "No. Python has to be installed, and you type two commands once. After that you use a page in your browser."],
   ["How does it know what is wrong?", "It works out what each column holds, then checks it. After you save a file as normal, it also compares each new file with that one."],
   ["What if it flags something that is fine?", "Mark it as fine and it stops being reported for that kind of file."],
   ["What does it save?", "A small text file describing your columns, only when you save a file as normal. Not your rows."],
@@ -178,6 +180,37 @@ export function Questions() {
   );
 }
 
+// ------------------------------------------------------------- get started
+const SETUP: { title: string; text: ReactNode; command?: string }[] = [
+  { title: "Install Python", text: <>Free, from <a className="link text-white" href="https://www.python.org/downloads/">python.org</a>. Version 3.8 or newer.</> },
+  { title: "Install PyDataQuality", text: "Open Terminal on a Mac, or Command Prompt on Windows, and type:", command: "pip install pydataquality" },
+  { title: "Open the app", text: "Type this. A page opens in your browser.", command: "pdq ui" },
+];
+
+export function GetStarted() {
+  return (
+    <section className="later py-24 md:py-36" id="start">
+      <div className="wrap">
+        <Heading eyebrow="Get started" title="Two commands, once." lede="There is no installer yet, so setup uses a terminal. After that it is a page in your browser." />
+        <ol className="mt-14 grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-3">
+          {SETUP.map((step, i) => (
+            <li key={step.title}>
+              <Reveal delay={0.08 * i} className="h-full">
+                <div className="card flex h-full flex-col p-6 md:p-7">
+                  <p className="font-mono text-[12px] text-haze" aria-hidden>{i + 1}</p>
+                  <h3 className="mt-3 font-display text-[22px] font-semibold leading-tight tracking-[-0.01em]">{step.title}</h3>
+                  <p className="mt-2 text-[15.5px] leading-relaxed text-fog">{step.text}</p>
+                  {step.command && <CopyCommand command={step.command} className="mt-5 w-full justify-between" />}
+                </div>
+              </Reveal>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
 // ---------------------------------------------------------------------- CTA
 export function CallToAction() {
   const panel = useRef<HTMLDivElement>(null);
@@ -185,7 +218,7 @@ export function CallToAction() {
   return (
     <section className="later px-2 pb-6 md:px-4">
       <Reveal>
-        <div ref={panel} className="grain relative mx-auto max-w-[1400px] overflow-hidden rounded-[24px] border border-white/10 bg-night-2 px-6 py-20 text-center md:rounded-[36px] md:px-12 md:py-32">
+        <div ref={panel} className="relative mx-auto max-w-[1400px] overflow-hidden rounded-[24px] border border-white/10 bg-night-2 px-6 py-20 text-center md:rounded-[36px] md:px-12 md:py-32">
           <div aria-hidden className="grid-floor absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
           <div aria-hidden className="absolute inset-x-0 top-0 h-2/3 bg-[radial-gradient(ellipse_50%_100%_at_50%_0%,rgba(203,213,225,0.14),transparent)]" />
           {seen && <BorderBeam size={360} duration={12} colorFrom="#ffffff" colorTo="#64748b" borderWidth={1.5} />}
@@ -194,8 +227,8 @@ export function CallToAction() {
             <p className="mx-auto mt-6 max-w-[480px] text-[17.5px] text-fog">Install it, run <span className="chip-dark !text-[14px]">pdq ui</span> and drop the file in.</p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
               <CopyCommand command="pip install pydataquality" />
-              <a href={LINKS.quickstart} className="btn-white min-h-[48px]">
-                Read the quickstart <ArrowRight size={16} aria-hidden />
+              <a href="#start" className="btn-white min-h-[48px]">
+                How to install <ArrowRight size={16} aria-hidden />
               </a>
             </div>
             <p className="mt-7 font-mono text-[12.5px] text-haze">Reads CSV, Excel, JSON and Parquet · MIT licence</p>

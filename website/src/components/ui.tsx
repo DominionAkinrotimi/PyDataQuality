@@ -113,3 +113,22 @@ export function WindowFrame({ children, className }: { children: ReactNode; clas
     </div>
   );
 }
+
+/** A real screenshot of the app in a window frame. Sizes are fixed so nothing moves as it loads. */
+export function Screenshot({ small, large, alt, sizes, className }: { small: string; large: string; alt: string; sizes: string; className?: string }) {
+  return (
+    <WindowFrame className={className}>
+      <img
+        src={large}
+        srcSet={`${small} 960w, ${large} 1920w`}
+        sizes={sizes}
+        width={1920}
+        height={1230}
+        loading="lazy"
+        decoding="async"
+        alt={alt}
+        className="block h-auto w-full bg-paper"
+      />
+    </WindowFrame>
+  );
+}

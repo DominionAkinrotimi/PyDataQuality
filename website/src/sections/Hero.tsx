@@ -157,8 +157,7 @@ export function Hero() {
             Know whether a data file is safe to use.
           </motion.h1>
           <motion.p variants={rise} className="lede mt-7 max-w-[520px]">
-            Drop in a spreadsheet or CSV. PyDataQuality reads every row, tells you in plain sentences what is wrong and
-            what changed since the last one, and hands you the rows to send back.
+            Drop in a spreadsheet or CSV. Get a plain answer in seconds, and the rows that are wrong.
           </motion.p>
           <motion.div variants={rise} className="mt-9 flex flex-wrap items-center gap-3">
             <CopyCommand command="pip install pydataquality" />
@@ -168,7 +167,7 @@ export function Hero() {
           </motion.div>
           <motion.p variants={rise} className="mt-7 flex items-center gap-2.5 text-[14px] text-fog">
             <MonitorCheck size={17} className="shrink-0 text-white/70" aria-hidden />
-            It runs on your own computer. Your file is not uploaded anywhere.
+            Runs on your computer. Nothing is uploaded.
           </motion.p>
         </motion.div>
 

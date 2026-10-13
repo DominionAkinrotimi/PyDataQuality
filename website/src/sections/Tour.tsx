@@ -16,25 +16,25 @@ const SHOTS = [
   {
     id: "check", label: "Check", small: check960, large: check1920,
     title: "Drop a file in.",
-    text: "The home screen has one job. Drop in a CSV, Excel, JSON or Parquet file, or try the built-in sample first.",
+    text: "CSV, Excel, JSON or Parquet. Or try the built-in sample.",
     alt: "The Check screen of the PyDataQuality app: the heading \"Is this file safe to use?\" above a large area to drop a file into, and a link to try a sample file.",
   },
   {
     id: "result", label: "Result", small: result960, large: result1920,
     title: "The answer comes first.",
-    text: "The verdict is the largest thing on the screen. Under it, each finding is one sentence, worst first, with the rows behind it one click away.",
+    text: "The verdict, then each finding in one sentence.",
     alt: "The Result screen for the sample file: a red banner reading \"Problems found\", with 3 problems, 4 warnings and 2 clean columns, followed by findings such as \"6 rows are exact copies of another row.\"",
   },
   {
     id: "rows", label: "Affected rows", small: rows960, large: rows1920,
     title: "See the rows behind a finding.",
-    text: "Every finding opens the actual rows, with the reason first and the column in question marked. Download them, or copy a short message to send back.",
+    text: "The actual rows, with the reason for each. Download or copy a message.",
     alt: "The Affected rows screen: a table of the 30 rows where country is spelled \"nigeria\", each with the reason \"spelling\", and buttons to copy a message or download the rows.",
   },
   {
     id: "save", label: "Save as normal", small: save960, large: save1920,
     title: "Review what it learned.",
-    text: "Before a file becomes the standard for later ones, you see what was learned, column by column, in plain words. You write no rules.",
+    text: "See what it learned before you save. You write no rules.",
     alt: "The Save as normal screen: a table listing each column, what it holds, such as \"numbers, no repeats\", and what will be checked next time, such as \"must stay unique\".",
   },
 ] as const;
@@ -59,8 +59,8 @@ export function Tour() {
       <div className="wrap">
         <Heading
           eyebrow="The app"
-          title="Four screens. This is all of it you need on day one."
-          lede={<>These are screenshots of the real app, checking the sample file that comes with it. It opens in your browser when you run <span className="chip-dark">pdq ui</span>.</>}
+          title="Four screens. That is all you need."
+          lede={<>Real screenshots, checking the sample file. Run <span className="chip-dark">pdq ui</span> to open it.</>}
           center
         />
 

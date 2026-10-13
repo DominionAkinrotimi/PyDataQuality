@@ -84,7 +84,7 @@ export function Finds() {
         <Heading
           eyebrow="What it finds"
           title="It catches what you would not spot by scrolling."
-          lede="It works out what each column is, an ID, a date, an email, a category or a number, before judging it. Each card shows the kind of thing it catches, and the sentence it writes."
+          lede="Each card shows the sentence it writes."
         />
         <ul className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FINDS.map((find, i) => (

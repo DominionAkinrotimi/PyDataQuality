@@ -42,8 +42,8 @@ const FINDS: Find[] = [
   },
   {
     title: "Numbers stored as text", tone: "warning", column: "amount",
-    says: "amount is mostly numbers, but 1 value is not: \"N/A\".",
-    cells: [{ value: "54.20" }, { value: "N/A", bad: true }, { value: "119.58" }],
+    says: "amount is mostly numbers, but 1 value is not: \"TBC\".",
+    cells: [{ value: "54.20" }, { value: "TBC", bad: true }, { value: "119.58" }],
   },
   {
     title: "Impossible values", tone: "problem", column: "age",

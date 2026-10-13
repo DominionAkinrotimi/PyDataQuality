@@ -93,7 +93,7 @@ def test_planted_problems_are_all_found():
     df.loc[5:7, "order_date"] = "2031-01-01"
     df.loc[8:20, "country"] = "nigeria "
     df["amount"] = df["amount"].astype(object)
-    df.loc[30, "amount"] = "N/A"
+    df.loc[30, "amount"] = "TBC"
     df = pd.concat([df, df.iloc[100:110]], ignore_index=True)
 
     result = pdq.check(df, today=TODAY)

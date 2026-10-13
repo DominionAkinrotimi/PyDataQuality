@@ -57,6 +57,7 @@ export function layoutCells(): Cell[] {
 /** The verdict the app gives the sample file. Shown beside the sheet once the scan has passed. */
 export const SAMPLE_VERDICT = {
   file: "sample_customers.csv",
+  size: "486 rows",
   headline: "Problems found",
-  summary: "3 problems and 4 warnings",
+  summary: "3 problems · 4 warnings · 2 clean columns",
 };

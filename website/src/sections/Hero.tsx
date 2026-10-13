@@ -1,6 +1,6 @@
 import { Component, Suspense, lazy, useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useInView, useReducedMotion, type Variants } from "motion/react";
-import { ArrowDown, CircleX, LoaderCircle, MonitorCheck } from "lucide-react";
+import { ArrowDown, MonitorCheck } from "lucide-react";
 import { CopyCommand } from "@/components/ui";
 import { HeroPoster } from "@/components/HeroPoster";
 import { SAMPLE_VERDICT } from "@/lib/sheet";
@@ -98,28 +98,33 @@ function Stage() {
           </div>
         )}
 
-        {/* The verdict, on a white sheet like the app's own result screen. */}
-        <div className="absolute bottom-[4%] left-[2%] w-[min(310px,78%)] lg:bottom-[9%] lg:left-[4%]">
-          <div className="overflow-hidden rounded-xl border border-white/20 bg-white text-ink shadow-sheet">
-            <AnimatePresence mode="wait" initial={false}>
-              {phase === "verdict" ? (
-                <motion.div key="verdict" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25 }} className="flex items-center gap-3 border-l-4 border-crit-ink p-3.5">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-crit-bg text-crit-ink"><CircleX size={20} /></span>
-                  <span className="min-w-0">
-                    <span className="block font-display text-[17px] font-semibold leading-tight tracking-[-0.005em]">{SAMPLE_VERDICT.headline}</span>
-                    <span className="block truncate text-[12.5px] text-muted">{SAMPLE_VERDICT.summary}</span>
-                  </span>
-                </motion.div>
-              ) : (
-                <motion.div key="checking" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25 }} className="flex items-center gap-3 border-l-4 border-line2 p-3.5">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-soft2 text-slate2"><LoaderCircle size={20} className="animate-spin" /></span>
-                  <span className="min-w-0">
-                    <span className="block font-display text-[17px] font-semibold leading-tight tracking-[-0.005em]">Checking</span>
-                    <span className="block truncate font-mono text-[12px] text-muted">{SAMPLE_VERDICT.file}</span>
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {/* The verdict. The file name stays put; the panel under it changes as the scan runs. */}
+        <div className="absolute bottom-[3%] left-[2%] w-[min(330px,86%)] lg:bottom-[8%] lg:left-[4%]">
+          <div className="rounded-2xl bg-white p-1.5 text-ink shadow-sheet">
+            <div className="flex items-center justify-between gap-3 px-2.5 pb-1.5 pt-1 font-mono text-[11px] text-muted">
+              <span className="truncate">{SAMPLE_VERDICT.file}</span>
+              <span className="shrink-0">{SAMPLE_VERDICT.size}</span>
+            </div>
+            <div className="relative h-[70px] overflow-hidden rounded-[10px] bg-soft2">
+              <AnimatePresence initial={false}>
+                {phase === "verdict" ? (
+                  <motion.div key="verdict" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3 }} className="absolute inset-0 flex flex-col justify-center px-3.5">
+                    <span className="flex items-center gap-2.5 font-display text-[18px] font-semibold leading-tight">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-crit-ink" />
+                      {SAMPLE_VERDICT.headline}
+                    </span>
+                    <span className="mt-1 truncate text-[12.5px] text-slate2">{SAMPLE_VERDICT.summary}</span>
+                  </motion.div>
+                ) : (
+                  <motion.div key="checking" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3 }} className="absolute inset-0 flex flex-col justify-center px-3.5">
+                    <span className="font-display text-[18px] font-semibold leading-tight">Checking</span>
+                    <span className="mt-3 block h-[3px] overflow-hidden rounded-full bg-line2">
+                      <motion.span className="block h-full w-1/3 rounded-full bg-ink" animate={{ x: ["-100%", "300%"] }} transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }} />
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>
@@ -152,8 +157,8 @@ export function Hero() {
             Know whether a data file is safe to use.
           </motion.h1>
           <motion.p variants={rise} className="lede mt-7 max-w-[520px]">
-            Someone sends you a spreadsheet or a CSV. Drop it in and get a plain answer in seconds: what is wrong with it,
-            and what changed since the last one.
+            Drop in a spreadsheet or CSV. PyDataQuality reads every row, tells you in plain sentences what is wrong and
+            what changed since the last one, and hands you the rows to send back.
           </motion.p>
           <motion.div variants={rise} className="mt-9 flex flex-wrap items-center gap-3">
             <CopyCommand command="pip install pydataquality" />

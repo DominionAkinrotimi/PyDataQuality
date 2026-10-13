@@ -79,7 +79,7 @@ export function Ways() {
 const FITS = ["Analysts with a monthly export", "Finance and operations staff with supplier or bank files", "Researchers with survey downloads", "Anyone who knows Excel and is sent files by other people"];
 const NOT = [
   "It does not fix or edit your file. It tells you what is wrong and where.",
-  "It does not use AI. The checks are fixed rules, so the same file gives the same answer.",
+  "It does not use AI. The checks are fixed rules, and “Why?” shows how each finding was decided.",
   "It does not run on a server or watch a database. It checks a file when you ask.",
   "It reads files that fit in your computer's memory, not larger ones.",
   "On a first check it never says “safe”, only “nothing obviously wrong”.",
@@ -121,6 +121,9 @@ const FAQ: [string, string][] = [
   ["Do I need to know Python?", "No. Python has to be on your computer so you can install PyDataQuality, and that is all. After that you run pdq ui and use the page in your browser."],
   ["How does it know what is wrong without being told?", "Two ways. Some things are wrong in any file: duplicate rows, repeated IDs, a date column with two formats. Others are wrong for the kind of column: once it recognises an age, a date or an email, it knows a negative age or a date in 2031 is suspect. After you save a file as normal, it also compares each new file with that one."],
   ["What if it flags something that is fine?", "Mark the finding as fine and it stops being reported for that kind of file. If the whole file is the new normal, save it as normal. It is tuned to stay quiet: a clean file says “nothing obviously wrong”."],
+  ["How does it know which earlier file to compare with?", "By the file name. Dates, month names and words like “final” or “copy” are ignored, so orders_november.csv is compared with what was learned from orders_october.csv. If no name matches, it uses the saved file whose columns match best."],
+  ["What does it save, and where?", "Only when you save a file as normal. It writes a small text file describing that file: column names, what each column holds, ranges, category values and the row count. It does not hold your rows. The app keeps these in a folder called .pydataquality in your home folder, and the command keeps them in a .pdq folder beside your file. For now the two do not share them."],
+  ["Can I add my own rules?", "Yes, in sentences. Open the saved file and add lines such as “price: greater than 0”, “order_id: unique, not empty” or “status: one of paid, pending, refunded”. The app shows your rules. Adding them from menus in the app is planned, not built."],
   ["Will it fix the file for me?", "No. It never changes your file. It shows you the rows that are affected, with the reason for each, so you can correct them or send them back to whoever produced the file."],
   ["What kinds of file does it read?", "CSV, TSV, Excel, JSON and Parquet. For an Excel workbook with several sheets, it asks which one."],
   ["Is it really free?", "Yes. It is open source under the MIT licence. There is no paid version."],

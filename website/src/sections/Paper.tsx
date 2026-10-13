@@ -71,7 +71,7 @@ function HowItWorks() {
   const drawn = useSpring(scrollYProgress, { stiffness: 90, damping: 24 });
   return (
     <div className="wrap pb-20 md:pb-28" id="how">
-      <Heading eyebrow="How it works" title="Four steps. You write no rules." lede="Every step is a button in the app and a command in the terminal. The commands are shown here." />
+      <Heading eyebrow="What you do" title="Four steps. You write no rules." lede="You approve one good file, and every later file is judged against it. Each step is a button in the app and a command in the terminal. The commands are shown here." />
       <ol ref={track} className="relative mt-14 grid gap-10 md:grid-cols-4 md:gap-6">
         {/* The line fills as you scroll: down the side on a phone, across the top on a wide screen. */}
         <span aria-hidden className="absolute bottom-0 left-[15px] top-0 w-px bg-line md:bottom-auto md:left-0 md:right-0 md:top-[15px] md:h-px md:w-auto" />
@@ -96,7 +96,7 @@ function HowItWorks() {
 
 export function Paper() {
   return (
-    <section className="later paper-zone relative px-2 md:px-4" aria-label="Plain language, and how it works">
+    <section className="later paper-zone relative px-2 md:px-4" aria-label="Plain language, and the four steps">
       <div className="mx-auto max-w-[1400px] overflow-hidden rounded-[24px] bg-paper text-ink shadow-sheet md:rounded-[36px] [color-scheme:light]">
         <PlainLanguage />
         <HowItWorks />

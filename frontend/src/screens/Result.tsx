@@ -1,8 +1,8 @@
 // Screen 2: the verdict and the findings.
 
 import { useState } from "react";
-import { Bookmark, CircleCheck, CircleHelp, Download, Eye, FileText, RotateCcw, Terminal, Wrench } from "lucide-react";
-import { api, type CheckResult, type Finding, type Level } from "../api";
+import { Bookmark, CircleCheck, CircleHelp, Download, Eye, FileText, Flag, RotateCcw, Terminal, Wrench } from "lucide-react";
+import { FEEDBACK_ISSUES, api, mailto, type CheckResult, type Finding, type Level } from "../api";
 import {
   Badge, CopyButton, Loading, Message, Notice, Page, VerdictIcon,
   fmt, href, levelTone, plural, sentence, useLoad, verdictTone,
@@ -33,7 +33,21 @@ function FindingCard({
 }: { finding: Finding; result: CheckResult; onIgnore: (key: string) => void; busy: boolean }) {
   const [why, setWhy] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  const [report, setReport] = useState<{ open: boolean; text: string | null; error: string | null }>({ open: false, text: null, error: null });
   const whyId = `why-${finding.index}`;
+  const reportId = `report-${finding.index}`;
+
+  const toggleReport = async () => {
+    if (report.open) return setReport({ ...report, open: false });
+    setReport({ open: true, text: report.text, error: null });
+    if (report.text) return;
+    try {
+      const made = await api.feedback(result.id, finding.index);
+      setReport({ open: true, text: made.report, error: null });
+    } catch (e) {
+      setReport({ open: true, text: null, error: (e as Error).message });
+    }
+  };
   return (
     <li className="card p-5">
       <div className="flex items-start justify-between gap-3">
@@ -56,12 +70,41 @@ function FindingCard({
             Why?
           </button>
         )}
-        {result.has_baseline && !confirm && (
-          <button type="button" className="btn-ghost ml-auto !min-h-[34px] text-sm2" onClick={() => setConfirm(true)}>
-            This is fine
+        <span className="ml-auto flex flex-wrap items-center gap-1">
+          <button type="button" className="btn-ghost !min-h-[34px] text-sm2" aria-expanded={report.open} aria-controls={reportId} onClick={toggleReport}>
+            <Flag size={14} aria-hidden />
+            This is wrong
           </button>
-        )}
+          {result.has_baseline && !confirm && (
+            <button type="button" className="btn-ghost !min-h-[34px] text-sm2" onClick={() => setConfirm(true)}>
+              This is fine
+            </button>
+          )}
+        </span>
       </div>
+
+      {report.open && (
+        <div id={reportId} className="mt-3 rounded-lg border border-line bg-soft p-3.5">
+          <p className="caps mb-1">Tell us this finding is wrong</p>
+          <p>
+            Nothing is sent from this app. Below is everything the report holds: no values from your file, no column
+            names and no file name. Copy it, add a line saying what was wrong, and send it yourself.
+          </p>
+          {report.error && <p className="mt-2 text-crit-ink">{report.error}</p>}
+          {!report.text && !report.error && <p className="mt-2 text-muted">Preparing the report…</p>}
+          {report.text && (
+            <>
+              <pre className="mt-3 overflow-x-auto whitespace-pre-wrap rounded border border-line bg-white p-3 font-mono text-[12px]" tabIndex={0} aria-label="The report, in full">{report.text}</pre>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <CopyButton text={report.text} label="Copy the report" />
+                <a className="btn-outline" href={mailto("PyDataQuality: a finding that was wrong")}>Open an email</a>
+                <a className="btn-outline" href={FEEDBACK_ISSUES} target="_blank" rel="noreferrer">Open a GitHub issue</a>
+              </div>
+              <p className="mt-2 text-sm2 text-muted">The email and the issue open empty. Paste the report in. Please do not attach your file.</p>
+            </>
+          )}
+        </div>
+      )}
 
       {why && (
         <div id={whyId} className="mt-3 rounded-lg border border-line bg-soft p-3.5">

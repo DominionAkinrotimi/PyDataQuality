@@ -157,6 +157,11 @@ export interface FixOutcome {
   after: { verdict: Verdict; headline: string; problems: number; warnings: number; left: string[] };
 }
 
+// Where someone can choose to send feedback. The app itself never contacts these.
+export const FEEDBACK_EMAIL = "contact.dominionakinrotimi@gmail.com";
+export const FEEDBACK_ISSUES = "https://github.com/DominionAkinrotimi/PyDataQuality/issues/new";
+export const mailto = (subject: string) => `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(subject)}`;
+
 const token = document.querySelector<HTMLMetaElement>('meta[name="pdq-token"]')?.content ?? "";
 
 const STOPPED = "PyDataQuality has stopped. Open it again, then reload this page.";
@@ -201,6 +206,7 @@ export const api = {
   accept: (id: string, name: string, skip: string[]) =>
     post<{ dataset: string; message: string }>("/api/accept", { id, name, skip }),
   ignore: (id: string, key: string) => post<CheckResult>("/api/ignore", { id, key }),
+  feedback: (id: string, finding: number) => call<{ report: string }>(`/api/feedback?${q({ id, finding: String(finding) })}`),
   fixes: (id: string) => call<FixList>(`/api/fixes?${q({ id })}`),
   fix: (id: string, choices: Record<string, string>) => post<FixOutcome>("/api/fix", { id, choices }),
   datasets: () => call<{ datasets: DatasetSummary[] }>("/api/datasets"),

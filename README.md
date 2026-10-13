@@ -162,6 +162,7 @@ An app opens in your browser. Drop a file on it and you get the same verdict. Fr
 
 - open any finding to see the rows behind it, search them and download them
 - fix the file: choose what to fix, then download a corrected copy and a list of every change
+- say a finding is wrong: “This is wrong” prepares a report with no values, column names or file name in it, for you to send if you choose
 - ask "Why?" to see how a finding was decided
 - review what was learned, column by column, before saving a file as normal
 - mark a finding as fine so it stops being reported for that dataset

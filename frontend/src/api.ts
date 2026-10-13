@@ -121,9 +121,45 @@ export interface DatasetDetail {
   history: HistoryEntry[];
 }
 
+export interface FixOption {
+  action: string;
+  label: string;
+  detail: string;
+  recommended: boolean;
+  rows: number;
+  cells: number;
+  examples: [string, string][];
+}
+
+export interface FixProposal {
+  key: string;
+  level: Level;
+  column: string;
+  message: string;
+  options: FixOption[];
+  reason: string;
+}
+
+export interface FixList {
+  id: string;
+  file: string;
+  rows: number;
+  fixable: FixProposal[];
+  not_fixable: FixProposal[];
+}
+
+export interface FixOutcome {
+  id: string;
+  file: string;
+  removed_rows: number;
+  changed_cells: number;
+  rows_left: number;
+  after: { verdict: Verdict; headline: string; problems: number; warnings: number; left: string[] };
+}
+
 const token = document.querySelector<HTMLMetaElement>('meta[name="pdq-token"]')?.content ?? "";
 
-const STOPPED = "PyDataQuality has stopped. Run pdq ui again in your terminal, then reload this page.";
+const STOPPED = "PyDataQuality has stopped. Open it again, then reload this page.";
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
@@ -165,6 +201,8 @@ export const api = {
   accept: (id: string, name: string, skip: string[]) =>
     post<{ dataset: string; message: string }>("/api/accept", { id, name, skip }),
   ignore: (id: string, key: string) => post<CheckResult>("/api/ignore", { id, key }),
+  fixes: (id: string) => call<FixList>(`/api/fixes?${q({ id })}`),
+  fix: (id: string, choices: Record<string, string>) => post<FixOutcome>("/api/fix", { id, choices }),
   datasets: () => call<{ datasets: DatasetSummary[] }>("/api/datasets"),
   dataset: (key: string) => call<DatasetDetail>(`/api/dataset?${q({ key })}`),
   unignore: (dataset: string, key: string) => post<DatasetDetail>("/api/unignore", { dataset, key }),
@@ -173,6 +211,8 @@ export const api = {
   // Downloads are plain links, so the token travels in the address.
   rowsLink: (id: string, finding: string) => `/download/rows?${q({ id, finding, t: token })}`,
   reportLink: (id: string) => `/download/report?${q({ id, t: token })}`,
+  fixedLink: (id: string) => `/download/fixed?${q({ id, t: token })}`,
+  changesLink: (id: string) => `/download/changes?${q({ id, t: token })}`,
 };
 
 export function isSheetChoice(value: CheckResult | SheetChoice): value is SheetChoice {

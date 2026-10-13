@@ -16,7 +16,7 @@ import json
 import os
 import sys
 
-COMMANDS = ("check", "accept", "rows", "report", "ui")
+COMMANDS = ("check", "accept", "rows", "report", "fix", "ui")
 EXIT_UNREADABLE = 3
 
 
@@ -89,6 +89,22 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("-o", "--output", help="where to save (default: <file>_check.html)")
     report.add_argument("--baseline")
     report.add_argument("--no-baseline", action="store_true")
+
+    fix = commands.add_parser(
+        "fix",
+        help="save a corrected copy of a file (the original is not changed)",
+        description="Without --apply, only the fixes that are safe for any file are made: exact copies of a row "
+        "are removed and spellings are made consistent. Use --list to see everything that can be fixed.",
+    )
+    fix.add_argument("file")
+    fix.add_argument("--list", action="store_true", dest="list_only", help="show what can be fixed and change nothing")
+    fix.add_argument(
+        "--apply", action="append", metavar='"FINDING=ACTION"',
+        help='also do this, e.g. "impossible:age=blank". --list shows the names (repeatable)',
+    )
+    fix.add_argument("-o", "--output", help="where to save the corrected copy (default: <file>_fixed.csv or .xlsx)")
+    fix.add_argument("--baseline")
+    fix.add_argument("--no-baseline", action="store_true")
 
     ui = commands.add_parser("ui", help="open a page in your browser where you can drop a file in")
     ui.add_argument("--port", type=int, default=0, help="port to use (default: any free port)")
@@ -170,6 +186,62 @@ def _run_rows(args, out):
     return 0
 
 
+def _run_fix(args, out):
+    from . import fixer
+    from .checker import check
+
+    result = check(args.file, baseline=False if args.no_baseline else args.baseline)
+    proposals = result.fixes()
+    fixable = [p for p in proposals if p.options]
+
+    if args.list_only:
+        if not fixable:
+            print("Nothing in this file can be fixed automatically.", file=out)
+            return 0
+        print("What can be fixed. Add --apply \"NAME=ACTION\" for anything not marked as done by default.", file=out)
+        for proposal in fixable:
+            print(f"\n  {proposal.message}", file=out)
+            for option in proposal.options:
+                default = "   (done by default)" if option.recommended else ""
+                print(f"      {proposal.key}={option.action:<12} {option.label}{default}", file=out)
+        return 0
+
+    choices = fixer.recommended(proposals)
+    for pair in args.apply or []:
+        key, separator, action = pair.rpartition("=")
+        if not separator or not key.strip() or not action.strip():
+            raise SystemExit(f'--apply looks like "impossible:age=blank". Got: {pair}')
+        choices[key.strip()] = action.strip()
+    if not choices:
+        print("Nothing was changed. No finding in this file has a fix that is safe to make without asking.", file=out)
+        print(f"Run: pdq fix {args.file} --list   to see what can be fixed if you choose to.", file=out)
+        return 0
+
+    try:
+        outcome = result.fix(choices)
+    except ValueError as error:
+        raise SystemExit(str(error))
+
+    stem, _ = os.path.splitext(args.file)
+    output = args.output or os.path.join(os.path.dirname(args.file), fixer.fixed_name(os.path.basename(args.file)))
+    fixer.write(outcome.df, output)
+    log = f"{stem}_changes.csv"
+    outcome.changes_frame().to_csv(log, index=False)
+
+    done = []
+    if outcome.removed_rows:
+        done.append(f"{outcome.removed_rows:,} row{'' if outcome.removed_rows == 1 else 's'} removed")
+    if outcome.changed_cells:
+        done.append(f"{outcome.changed_cells:,} cell{'' if outcome.changed_cells == 1 else 's'} changed")
+    print(f"Saved a corrected copy to {output} ({', '.join(done) or 'no changes'}).", file=out)
+    print(f"Every change is listed in {log}", file=out)
+    print(f"{args.file} was not changed.", file=out)
+    again = outcome.result
+    left = len(again.problems) + len(again.warnings)
+    print(f"\nThe corrected copy: {again.headline}" + (f", {left} finding{'' if left == 1 else 's'} left." if left else "."), file=out)
+    return 0
+
+
 def _run_report(args, out):
     from .checker import check
 
@@ -208,6 +280,7 @@ def main(argv=None, out=None) -> int:
             "accept": _run_accept,
             "rows": _run_rows,
             "report": _run_report,
+            "fix": _run_fix,
             "ui": _run_ui,
         }
         return handlers[args.command](args, out)

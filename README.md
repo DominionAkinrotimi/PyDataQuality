@@ -126,6 +126,32 @@ pdq rows customers_november.csv
 
 Saves the affected rows to `customers_november_problem_rows.csv` with a `_pdq_reason` column saying why each row is there. Send that back to whoever produced the file.
 
+### 5. Fix it
+
+```bash
+pdq fix customers_november.csv
+```
+
+Saves a corrected copy, `customers_november_fixed.csv`, and a list of every change, `customers_november_changes.csv`. Your original file is never changed.
+
+Only the fixes that are safe for any file are made unless you ask for more: exact copies of a row are removed, and a value spelled several ways gets its most common spelling. Everything else is yours to decide, because only you know the data:
+
+```bash
+pdq fix customers_november.csv --list                         # what can be fixed
+pdq fix customers_november.csv --apply "impossible:age=blank"   # also empty the impossible ages
+```
+
+| Finding | What can be done |
+|:--|:--|
+| Exact duplicate rows | Remove the copies, keep the first (done by default) |
+| One value spelled several ways | Use the most common spelling (done by default) |
+| Mixed date formats | Rewrite them like the rest of the column |
+| Impossible, out-of-range or future values, invalid emails, stray text in a number column, a broken rule | Empty the cell, or remove the row |
+| IDs that repeat | Keep the first of each and remove the rest |
+| A missing column, far fewer rows, empty values | Cannot be fixed from inside the file |
+
+The corrected copy is checked again straight away, so you see what is left. In Python: `outcome = result.fix()` gives `outcome.df`, `outcome.changes_frame()` and `outcome.result`.
+
 ### Prefer not to use a terminal?
 
 ```bash
@@ -135,6 +161,7 @@ pdq ui
 An app opens in your browser. Drop a file on it and you get the same verdict. From there you can:
 
 - open any finding to see the rows behind it, search them and download them
+- fix the file: choose what to fix, then download a corrected copy and a list of every change
 - ask "Why?" to see how a finding was decided
 - review what was learned, column by column, before saving a file as normal
 - mark a finding as fine so it stops being reported for that dataset
@@ -210,6 +237,10 @@ pdq rows FILE       save the affected rows, with reasons
     -o PATH             where to save
 pdq report FILE     write a one-page HTML summary to share
     -o PATH             where to save
+pdq fix FILE        save a corrected copy (the original is not changed)
+    --list              show what can be fixed and change nothing
+    --apply "NAME=ACTION"  also do this, e.g. "impossible:age=blank"
+    -o PATH             where to save
 pdq ui              open the drag-and-drop page in your browser
     --port N            use a specific port
     --no-browser        print the address without opening it
@@ -257,11 +288,11 @@ result = pdq.check(new_df, baseline="baselines/orders.yml",
 
 ## Status
 
-Version 0.3. What works today, and what is planned next:
+Version 0.4. What works today, and what is planned next:
 
 | Works today | Planned |
 |:--|:--|
-| `pdq check`, `accept`, `rows`, `report` | Building rules from menus in the browser app |
+| `pdq check`, `accept`, `rows`, `report`, `fix` | Building rules from menus in the browser app |
 | Baselines and comparison with the last file | Re-opening a past result after the app is restarted |
 | Your own rules in plain sentences | A note field on the summary you share |
 | Browser app: verdict, affected rows, review before saving, datasets, history, sheet chooser, sample file | Sharing baselines between the app and the command line |

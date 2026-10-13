@@ -8,6 +8,7 @@ import { Check } from "./screens/Check";
 import { Result } from "./screens/Result";
 import { Rows } from "./screens/Rows";
 import { Save } from "./screens/Save";
+import { Fix } from "./screens/Fix";
 import { Datasets } from "./screens/Datasets";
 import { Dataset } from "./screens/Dataset";
 import { Help } from "./screens/Help";
@@ -70,6 +71,8 @@ function App() {
       return <Shell section="check"><Rows id={a ?? ""} finding={b ?? "all"} /></Shell>;
     case "save":
       return <Shell section="check"><Save id={a ?? ""} /></Shell>;
+    case "fix":
+      return <Shell section="check"><Fix id={a ?? ""} /></Shell>;
     case "datasets":
       return <Shell section="datasets"><Datasets /></Shell>;
     case "dataset":

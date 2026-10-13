@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="pydataquality",
-    version="0.3.1",
+    version="0.4.0",
     author="Dominion Akinrotimi",
     author_email="contact.dominionakinrotimi@gmail.com",
     description="Know whether a data file is safe to use, and what changed since the last one",

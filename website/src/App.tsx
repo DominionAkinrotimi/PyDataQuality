@@ -23,7 +23,7 @@ function GithubMark() {
 function Logo() {
   return (
     <a href="#top" className="flex min-h-[44px] items-center gap-2.5 font-display text-[17px] font-semibold tracking-[-0.005em]">
-      <span className="grid h-8 w-8 place-items-center rounded-lg bg-white" aria-hidden><Mark size={26} /></span>
+      <Mark size={34} ground="#090a0f" className="shrink-0" />
       PyDataQuality
     </a>
   );

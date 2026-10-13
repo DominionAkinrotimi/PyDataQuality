@@ -1,11 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-<rect width="64" height="64" rx="14" fill="#fff"/>
-<g transform="translate(-6.921 -0.618) scale(0.15758)">
-<path d="M262 66a15 15 0 0 1 30 0V308L262 336Z" fill="#090a0f"/>
-<path d="M238 153L292 203L241 261L193 206Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round"/>
-<rect x="150" y="139" width="29" height="223" rx="14.5" fill="#090a0f"/>
-<path d="M238 153L292 203L241 261L193 206Z" fill="#090a0f" stroke="#090a0f" stroke-width="13" stroke-linejoin="round"/>
-<path d="M211 209L229 225L263 190" fill="none" stroke="#2f9e4f" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M320 299L343 296L345.5 299L288 361H256Z" fill="#2f9e4f" stroke="#2f9e4f" stroke-width="3" stroke-linejoin="round"/>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<style>g,path{fill:#090a0f;stroke:#090a0f}@media (prefers-color-scheme:dark){g,path{fill:#fff;stroke:#fff}}mask path{fill:none;stroke:#000}mask rect{fill:#fff;stroke:none}</style>
+<mask id="m"><rect width="100" height="100" fill="#fff"/><path d="M31 48L44 60L66 35" fill="none" stroke="#000" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/></mask>
+<g mask="url(#m)"><path d="M47 14L82 46L50 80L15 49Z" stroke-width="12" stroke-linejoin="round"/></g>
+<path d="M82 70L96 68L72 94H52Z" stroke-width="2" stroke-linejoin="round"/>
 </svg>

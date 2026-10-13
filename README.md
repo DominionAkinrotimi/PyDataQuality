@@ -52,6 +52,17 @@ pip install pydataquality
 
 Python 3.8 or newer. Reads CSV, TSV, Excel, JSON and Parquet (Parquet needs `pip install pyarrow`).
 
+### Without a terminal
+
+There is a desktop app for people who would rather not install Python. It carries its own copy of Python, puts PyDataQuality on the Start menu, and opens the same app as `pdq ui`.
+
+- **Windows:** download `PyDataQuality-Setup.exe` from the [latest release](https://github.com/DominionAkinrotimi/PyDataQuality/releases/latest) and run it. It installs for your user only and does not ask for an administrator password.
+- **Mac (Apple Silicon):** download `PyDataQuality-macOS.zip` from the same page, unzip it and move PyDataQuality to Applications.
+
+The downloads are attached to releases made after version 0.3.0. They are not code-signed yet, so Windows shows a "Windows protected your PC" notice (choose **More info**, then **Run anyway**) and macOS asks you to confirm in **System Settings > Privacy & Security**. The desktop app reads CSV, TSV, Excel and JSON. For Parquet, use the `pip` install.
+
+To build them yourself, see [packaging/README.md](packaging/README.md).
+
 ## How it works
 
 ### 1. Check a file

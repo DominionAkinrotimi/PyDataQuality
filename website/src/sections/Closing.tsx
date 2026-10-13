@@ -10,19 +10,19 @@ import { cn } from "@/lib/utils";
 const WAYS = [
   {
     id: "browser", label: "In your browser", command: "pdq ui",
-    who: "For people who would rather not use a terminal.",
+    who: "No terminal needed.",
     points: ["Drag and drop a file", "See the rows behind any finding", "Review what was learned before saving", "A history of every kind of file you check"],
     code: `$ pdq ui\n\nAn app opens in your browser.\nDrop a file on it to check it.\nIt is served from your own computer\nand loads nothing from the internet.`,
   },
   {
     id: "terminal", label: "In a terminal", command: "pdq check file.csv",
-    who: "For quick checks and scheduled jobs.",
+    who: "Quick checks and scheduled jobs.",
     points: ["One command, nothing to configure", "Exit codes 0, 1 and 2 for automation", "Machine-readable output with --json", "Your own rules in plain sentences"],
     code: `$ pdq check orders.csv --rule "price: greater than 0"\n$ pdq accept orders.csv\n$ pdq rows orders.csv\n$ pdq report orders.csv`,
   },
   {
     id: "python", label: "In Python", command: "pdq.check(df)",
-    who: "For notebooks and scripts.",
+    who: "Notebooks and scripts.",
     points: ["Works on a file path or a DataFrame", "Shows the same summary in a notebook", "Affected rows come back as a DataFrame", "The same findings as the app"],
     code: `import pydataquality as pdq\n\nresult = pdq.check("orders.csv")\nresult.verdict        # 'problems'\nresult.bad_rows()     # DataFrame, with a reason column`,
   },
@@ -78,11 +78,10 @@ export function Ways() {
 // -------------------------------------------------------------- fit and FAQ
 const FITS = ["Analysts with a monthly export", "Finance and operations staff with supplier or bank files", "Researchers with survey downloads", "Anyone who knows Excel and is sent files by other people"];
 const NOT = [
-  "It does not fix or edit your file. It tells you what is wrong and where.",
-  "It does not use AI. The checks are fixed rules, and “Why?” shows how each finding was decided.",
-  "It does not run on a server or watch a database. It checks a file when you ask.",
-  "It reads files that fit in your computer's memory, not larger ones.",
-  "On a first check it never says “safe”, only “nothing obviously wrong”.",
+  "It does not fix or edit your file.",
+  "It does not use AI.",
+  "It does not run on a server.",
+  "It does not read files larger than memory.",
 ];
 
 export function Fit() {
@@ -103,7 +102,7 @@ export function Fit() {
         <Reveal delay={0.08} className="h-full">
           <TiltCard className="bg-night-2 p-8 md:p-10">
             <p className="eyebrow mb-4">What it is not</p>
-            <h2 className="font-display text-[28px] font-semibold leading-tight tracking-[-0.01em] md:text-[32px]">A small tool with one job. Here are its limits.</h2>
+            <h2 className="font-display text-[28px] font-semibold leading-tight tracking-[-0.01em] md:text-[32px]">One job. Clear limits.</h2>
             <ul className="mt-7 flex flex-col gap-3.5">
               {NOT.map((item) => (
                 <li key={item} className="flex items-start gap-3 text-[16.5px] text-white/85"><Minus size={18} className="mt-1 shrink-0 text-haze" aria-hidden />{item}</li>
@@ -117,16 +116,12 @@ export function Fit() {
 }
 
 const FAQ: [string, string][] = [
-  ["Does my file leave my computer?", "No. The app is a small program running on your own machine. It makes no requests to the internet, has no account and collects nothing. A file you drop in is read and then deleted from a temporary folder."],
-  ["Do I need to know Python?", "No. Python has to be on your computer so you can install PyDataQuality, and that is all. After that you run pdq ui and use the page in your browser."],
-  ["How does it know what is wrong without being told?", "Two ways. Some things are wrong in any file: duplicate rows, repeated IDs, a date column with two formats. Others are wrong for the kind of column: once it recognises an age, a date or an email, it knows a negative age or a date in 2031 is suspect. After you save a file as normal, it also compares each new file with that one."],
-  ["What if it flags something that is fine?", "Mark the finding as fine and it stops being reported for that kind of file. If the whole file is the new normal, save it as normal. It is tuned to stay quiet: a clean file says “nothing obviously wrong”."],
-  ["How does it know which earlier file to compare with?", "By the file name. Dates, month names and words like “final” or “copy” are ignored, so orders_november.csv is compared with what was learned from orders_october.csv. If no name matches, it uses the saved file whose columns match best."],
-  ["What does it save, and where?", "Only when you save a file as normal. It writes a small text file describing that file: column names, what each column holds, ranges, category values and the row count. It does not hold your rows. The app keeps these in a folder called .pydataquality in your home folder, and the command keeps them in a .pdq folder beside your file. For now the two do not share them."],
-  ["Can I add my own rules?", "Yes, in sentences. Open the saved file and add lines such as “price: greater than 0”, “order_id: unique, not empty” or “status: one of paid, pending, refunded”. The app shows your rules. Adding them from menus in the app is planned, not built."],
-  ["Will it fix the file for me?", "No. It never changes your file. It shows you the rows that are affected, with the reason for each, so you can correct them or send them back to whoever produced the file."],
-  ["What kinds of file does it read?", "CSV, TSV, Excel, JSON and Parquet. For an Excel workbook with several sheets, it asks which one."],
-  ["Is it really free?", "Yes. It is open source under the MIT licence. There is no paid version."],
+  ["Does my file leave my computer?", "No. It makes no requests to the internet, has no account and collects nothing."],
+  ["Do I need to know Python?", "No. Python is only needed to install it. After that you use a page in your browser."],
+  ["How does it know what is wrong?", "It works out what each column holds, then checks it. After you save a file as normal, it also compares each new file with that one."],
+  ["What if it flags something that is fine?", "Mark it as fine and it stops being reported for that kind of file."],
+  ["What does it save?", "A small text file describing your columns, only when you save a file as normal. Not your rows."],
+  ["Is it free?", "Yes. Open source, MIT licence, no paid version."],
 ];
 
 export function Questions() {

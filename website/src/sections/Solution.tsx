@@ -46,11 +46,11 @@ export function Outcomes() {
         <Heading
           eyebrow="What you get back"
           title="An answer, the reasons, and the rows."
-          lede="You do not get a report to study. You get one line saying whether the file can be used, a short list of what is wrong in sentences, and the exact rows behind each one."
+          lede="Not a report to study. One line, a short list, and the rows."
         />
         <div className="mt-14 grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-3">
           <Reveal className="h-full">
-            <Outcome step="1" title="A verdict" text="One of six, and the worst finding decides which. On a first check it never says “safe”, because it has nothing to compare the file with yet.">
+            <Outcome step="1" title="A verdict" text="Can you use the file? One line tells you.">
               {VERDICTS.map((group) => (
                 <div key={group.when} className="mb-3 last:mb-0">
                   <p className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{group.when}</p>
@@ -64,7 +64,7 @@ export function Outcomes() {
             </Outcome>
           </Reveal>
           <Reveal delay={0.08} className="h-full">
-            <Outcome step="2" title="The reasons, in sentences" text="Each finding names the column, how many rows are affected and an example value. Problems come first, then warnings, largest first.">
+            <Outcome step="2" title="The reasons" text="What is wrong, where, and how many rows. Worst first.">
               {REASONS.map(([tag, sentence]) => (
                 <div key={tag} className="border-b border-line py-2.5 first:pt-0 last:border-0 last:pb-0">
                   <p className="text-[13.5px] leading-snug">{sentence}</p>
@@ -74,7 +74,7 @@ export function Outcomes() {
             </Outcome>
           </Reveal>
           <Reveal delay={0.16} className="h-full">
-            <Outcome step="3" title="The rows to send back" text="Every finding opens the rows behind it, with the reason in the first column. Download them, or copy a short message for whoever produced the file.">
+            <Outcome step="3" title="The rows to send back" text="Download the affected rows, with a message ready to send.">
               <div className="overflow-hidden rounded-md border border-line font-mono text-[11px]">
                 <div className="grid grid-cols-[1.2fr_0.6fr_1fr_1fr] bg-soft2 text-muted">
                   {["reason", "row", "customer_id", "country"].map((head) => <span key={head} className="truncate px-2 py-1.5">{head}</span>)}
@@ -98,26 +98,11 @@ export function Outcomes() {
 
 // ------------------------------------------------- what happens to a file
 const STAGES: { title: string; text: ReactNode }[] = [
-  {
-    title: "It reads the file where it is.",
-    text: <>CSV, TSV, Excel, JSON and Parquet. For a CSV it works out the separator and the text encoding itself. Nothing is sent anywhere: in the app, the file is copied to a temporary folder on your computer, read, and deleted.</>,
-  },
-  {
-    title: "It works out what each column holds.",
-    text: <>From the values and the column name it decides whether a column is an ID, an email, a date, a number, a number stored as text, a yes/no, a category or free text. This is what lets it judge a file it has never seen: once a column is known to hold email addresses, the few values that are not stand out.</>,
-  },
-  {
-    title: "It runs only the checks that fit.",
-    text: <>An ID column is checked for repeats, not for unusual numbers. A future date in <span className="chip-dark">signup_date</span> is a problem, while one in <span className="chip-dark">due_date</span> is expected. The check for extreme numbers is strict on purpose, so ordinary uneven data such as incomes or order amounts is left alone.</>,
-  },
-  {
-    title: "It compares with the file you approved.",
-    text: <>It finds the earlier file by name, ignoring dates, month names and words like “final” or “copy”, or failing that by matching columns. Then it looks for columns that went missing, appeared or changed type, fewer than half or more than double the rows, an ID that now repeats, category values never seen before, numbers outside the earlier range or whose typical value has shifted, a column that is much emptier, and the very same file sent again.</>,
-  },
-  {
-    title: "It writes the answer.",
-    text: <>Each finding becomes one sentence with a count and an example. The worst finding sets the verdict. The same result is shown in the app, printed by the command and returned to Python.</>,
-  },
+  { title: "Reads the file", text: <>CSV, Excel, JSON or Parquet, on your computer.</> },
+  { title: "Works out each column", text: <>ID, date, email, number, category or text.</> },
+  { title: "Runs the checks that fit", text: <>A future <span className="chip-dark">signup_date</span> is a problem. A future <span className="chip-dark">due_date</span> is not.</> },
+  { title: "Compares with last time", text: <>Missing columns, new values, far fewer rows, shifted numbers.</> },
+  { title: "Writes the answer", text: <>One sentence per finding. The worst one sets the verdict.</> },
 ];
 
 // The baseline saved from the sample file, with some lines left out. The values are as saved,
@@ -131,25 +116,9 @@ columns:
   email: {kind: email, type: text, unique: true}
   country:
     kind: category
-    values: [Ghana, Kenya, NIGERIA, Nigeria, South Africa, nigeria]
-  monthly_spend:
-    kind: number
-    min: 15.28
-    max: 480000.0
-    median: 68.475`;
+    values: [Ghana, Kenya, NIGERIA, Nigeria, South Africa, nigeria]`;
 
-const PRIVACY = [
-  "The app answers only on 127.0.0.1, your own computer, and refuses requests addressed to any other name.",
-  "Each session has its own key, so another website open in your browser cannot use the app.",
-  "It makes no network requests. There is no account, no tracking and no update check.",
-  "A file you drop in is deleted from the temporary folder once it has been read.",
-];
-
-const WHY: [string, string][] = [
-  ["country has 3 spellings of the same value.", "Values are compared after removing extra spaces and ignoring capital letters."],
-  ["signup_date has 3 dates in the future.", "Compared with today's date on this computer."],
-  ["signup_date mixes 2 date formats.", "Mixed formats are often read wrongly, for example 03/04 as March or April."],
-];
+const PRIVACY = ["Served from 127.0.0.1, your own computer.", "No network requests, no account, no tracking.", "Your file is deleted once it has been read."];
 
 function Panel({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
   return (
@@ -168,9 +137,9 @@ export function Engine() {
     <section className="later relative border-y border-white/[0.07] bg-night-1 py-24 md:py-36" id="inside">
       <div className="wrap">
         <Heading
-          eyebrow="What it does with your file"
-          title="From a dropped file to an answer, in five steps."
-          lede="No AI and no guessing. The checks are ordinary rules that run on your computer, and you can ask how any finding was decided."
+          eyebrow="How it works"
+          title="No AI. Five plain steps."
+          lede="Fixed rules, run on your computer. Ask “Why?” on any finding to see how it was decided."
         />
         <div className="mt-14 grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
           <ol ref={track} className="relative">
@@ -191,9 +160,7 @@ export function Engine() {
             <Reveal>
               <Panel label="What it remembers">
                 <pre tabIndex={0} aria-label="A saved baseline file, shortened" className="overflow-x-auto bg-ink px-5 py-4 font-mono text-[12.5px] leading-relaxed text-white/80">{BASELINE}</pre>
-                <p className="px-5 py-4 text-[14.5px] leading-relaxed text-fog">
-                  Saving a file as normal writes a small text file like this: column names, what each holds, ranges, category values and the row count. It does not hold your rows. This one was saved from the sample file, mistakes included, which is why the app shows you what it learned before you save. You can open the file, read it and add your own rules.
-                </p>
+                <p className="px-5 py-4 text-[14.5px] leading-relaxed text-fog">A small text file you can read and edit. It describes your columns. It does not hold your rows.</p>
               </Panel>
             </Reveal>
             <Reveal delay={0.06}>
@@ -202,18 +169,6 @@ export function Engine() {
                   {PRIVACY.map((line) => (
                     <li key={line} className="flex items-start gap-3 text-[14.5px] leading-relaxed text-white/85">
                       <span aria-hidden className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-ok-glow" />{line}
-                    </li>
-                  ))}
-                </ul>
-              </Panel>
-            </Reveal>
-            <Reveal delay={0.12}>
-              <Panel label="Ask why">
-                <ul className="px-5 py-2">
-                  {WHY.map(([finding, why]) => (
-                    <li key={finding} className="border-b border-white/[0.07] py-3 last:border-0">
-                      <p className="text-[14.5px] text-white/90">{finding}</p>
-                      <p className="mt-1 text-[14px] leading-snug text-fog"><span className="mr-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-haze">Why</span>{why}</p>
                     </li>
                   ))}
                 </ul>
@@ -234,7 +189,7 @@ const STATS: { value: number; suffix: string; text: string; source: string; href
     source: "dbt Labs, State of Analytics Engineering 2025",
     href: "https://www.getdbt.com/blog/state-of-analytics-engineering-2025-summary",
     answer: "Checking becomes one step.",
-    detail: "Drop the file in, or run one command. There is nothing to set up and no rules to write, so it is quick enough to do every time a file arrives.",
+    detail: "Drop the file in. Nothing to set up, no rules to write.",
   },
   {
     value: 74, suffix: "%",
@@ -242,7 +197,7 @@ const STATS: { value: number; suffix: string; text: string; source: string; href
     source: "Monte Carlo and Wakefield Research, 2023",
     href: "https://www.businesswire.com/news/home/20230502005377/en/5435996/Data-Downtime-Nearly-Doubled-Year-Over-Year-Monte-Carlo-Survey-Says",
     answer: "You see it first.",
-    detail: "The verdict comes before you build anything on the file, with the affected rows and a short message ready for whoever produced it.",
+    detail: "The verdict comes before you build anything on the file.",
   },
   {
     value: 15841, suffix: "",
@@ -250,7 +205,7 @@ const STATS: { value: number; suffix: string; text: string; source: string; href
     source: "Public Health England, October 2020",
     href: "https://theconversation.com/why-you-should-never-use-excel-to-count-coronavirus-cases-147681",
     answer: "It remembers the last file.",
-    detail: "Once you save a file as normal, the next one is compared with it. Fewer than half the rows, or a column that has gone missing, is flagged before you use the file.",
+    detail: "Far fewer rows than last time, or a missing column, gets flagged.",
   },
 ];
 
@@ -296,9 +251,9 @@ export function Answers() {
       <div aria-hidden className="grid-floor absolute inset-0 opacity-60 [mask-image:linear-gradient(to_bottom,transparent,black_30%,transparent)]" />
       <div className="wrap relative">
         <Heading
-          eyebrow="Why it is worth a minute"
+          eyebrow="Why it matters"
           title="Find it before your reader does."
-          lede="A file looks fine when you scroll through it. The trouble shows up later, in a report someone else is reading. Here is what is known about that, and what PyDataQuality does about each part."
+          lede="Bad files are usually caught late, by someone else."
         />
         <ul className="mt-12">
           {STATS.map((stat, i) => <Answer key={stat.source} stat={stat} index={i} />)}

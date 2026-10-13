@@ -48,7 +48,7 @@ function PlainLanguage() {
       <Heading
         eyebrow="Plain language"
         title="Sentences you can act on, or forward."
-        lede="Each finding names the column, the count and an example. No statistics unless you ask why."
+        lede="No jargon. No statistics unless you ask."
       />
       <ul className="mt-12 border-b border-line">
         {TRANSLATIONS.map((row, i) => <Translation key={row.wrong} row={row} index={i} />)}
@@ -59,10 +59,10 @@ function PlainLanguage() {
 
 // -------------------------------------------------------------- how it works
 const STEPS: { title: string; text: string; command: string }[] = [
-  { title: "Check", command: "pdq check orders.csv", text: "Drop a file on the page, or run one command. You get a verdict and a short list, worst first." },
-  { title: "Remember", command: "pdq accept orders.csv", text: "When a file is good, save it as normal. You see what was learned before anything is saved." },
-  { title: "Check the next one", command: "pdq check orders_november.csv", text: "Next month's file is compared with it automatically: missing columns, new values, fewer rows, shifted numbers." },
-  { title: "Act", command: "pdq rows orders_november.csv", text: "Save the affected rows with the reason for each, and send them back to whoever produced the file." },
+  { title: "Check", command: "pdq check orders.csv", text: "Drop a file in. Get a verdict." },
+  { title: "Remember", command: "pdq accept orders.csv", text: "Save a good file as normal." },
+  { title: "Check the next one", command: "pdq check orders_november.csv", text: "It is compared automatically." },
+  { title: "Act", command: "pdq rows orders_november.csv", text: "Send the bad rows back." },
 ];
 
 function HowItWorks() {
@@ -71,7 +71,7 @@ function HowItWorks() {
   const drawn = useSpring(scrollYProgress, { stiffness: 90, damping: 24 });
   return (
     <div className="wrap pb-20 md:pb-28" id="how">
-      <Heading eyebrow="What you do" title="Four steps. You write no rules." lede="You approve one good file, and every later file is judged against it. Each step is a button in the app and a command in the terminal. The commands are shown here." />
+      <Heading eyebrow="What you do" title="Four steps. You write no rules." lede="A button in the app, or a command." />
       <ol ref={track} className="relative mt-14 grid gap-10 md:grid-cols-4 md:gap-6">
         {/* The line fills as you scroll: down the side on a phone, across the top on a wide screen. */}
         <span aria-hidden className="absolute bottom-0 left-[15px] top-0 w-px bg-line md:bottom-auto md:left-0 md:right-0 md:top-[15px] md:h-px md:w-auto" />

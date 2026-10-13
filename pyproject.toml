@@ -46,7 +46,7 @@ notebook = ["ipython>=7.0", "jupyter>=1.0"]
 exclude = ["tests*", "examples*", "frontend*", "paperwriting*", "media*", "docs*"]
 
 [tool.setuptools.package-data]
-pydataquality = ["static/app/*", "static/app/assets/*"]
+pydataquality = ["static/app/*", "static/app/assets/*", "static/icon.ico"]
 
 [project.urls]
 Homepage = "https://github.com/DominionAkinrotimi/pydataquality"

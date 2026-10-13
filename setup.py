@@ -14,7 +14,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/DominionAkinrotimi/pydataquality",
     packages=find_packages(exclude=["tests", "tests.*", "examples", "examples.*"]),
-    package_data={"pydataquality": ["static/app/*", "static/app/assets/*"]},
+    package_data={"pydataquality": ["static/app/*", "static/app/assets/*", "static/icon.ico"]},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

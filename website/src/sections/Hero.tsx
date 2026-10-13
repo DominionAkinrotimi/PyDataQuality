@@ -1,348 +1,179 @@
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowRight, Check, CircleCheck, CircleX, Copy, FileSpreadsheet, ShieldCheck } from "lucide-react";
-import { BorderBeam } from "@/components/magicui/border-beam";
-import { DotPattern } from "@/components/magicui/dot-pattern";
-import { cn } from "@/lib/utils";
+import { Component, Suspense, lazy, useEffect, useRef, useState, type ReactNode } from "react";
+import { AnimatePresence, motion, useInView, useReducedMotion, type Variants } from "motion/react";
+import { ArrowDown, CircleX, LoaderCircle, MonitorCheck } from "lucide-react";
+import { CopyCommand } from "@/components/ui";
+import { HeroPoster } from "@/components/HeroPoster";
+import { SAMPLE_VERDICT } from "@/lib/sheet";
+import type { ScenePhase } from "@/three/HeroScene";
 
-export const LINKS = {
-  github: "https://github.com/DominionAkinrotimi/PyDataQuality",
-  quickstart: "https://github.com/DominionAkinrotimi/PyDataQuality/blob/main/docs/quickstart.md",
-  guide: "https://github.com/DominionAkinrotimi/PyDataQuality/blob/main/docs/user_guide.md",
-  security: "https://github.com/DominionAkinrotimi/PyDataQuality/blob/main/SECURITY.md",
-  pypi: "https://pypi.org/project/pydataquality/",
-};
+// The 3D code is a separate file, fetched only when it will actually be shown.
+const HeroScene = lazy(() => import("@/three/HeroScene"));
 
-export function CopyCommand({ command, dark = false }: { command: string; dark?: boolean }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(command);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      /* the command is selectable text, so copying by hand still works */
-    }
-  };
-  return (
-    <button
-      type="button"
-      onClick={copy}
-      aria-label={`Copy the command: ${command}`}
-      className={cn(
-        "group inline-flex min-h-[44px] items-center gap-3 rounded-lg border px-4 font-mono text-[14px] transition-colors",
-        dark ? "border-white/15 bg-white/5 text-white hover:bg-white/10" : "border-line bg-white text-ink hover:border-line2 hover:bg-soft",
-      )}
-    >
-      <span className={dark ? "text-white/40" : "text-muted"} aria-hidden>$</span>
-      <span className="select-all">{command}</span>
-      <span className={cn("ml-1 grid h-6 w-6 place-items-center rounded", dark ? "text-white/60" : "text-muted")} aria-hidden>
-        {copied ? <Check size={15} /> : <Copy size={15} />}
-      </span>
-      <span className="sr-only" role="status">{copied ? "Copied" : ""}</span>
-    </button>
-  );
+/** True when this device should get the moving scene rather than the still picture. */
+function canRun3d(): boolean {
+  const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
+  if (nav.connection?.saveData) return false;
+  if (nav.hardwareConcurrency !== undefined && nav.hardwareConcurrency < 4) return false;
+  if (nav.deviceMemory !== undefined && nav.deviceMemory < 4) return false;
+  // Phones keep the still picture: the scene would cost them battery and a slower first load.
+  if (window.matchMedia("(max-width: 767px), (pointer: coarse) and (max-width: 1023px)").matches) return false;
+  return "WebGL2RenderingContext" in window;
 }
 
-// ---------------------------------------------------------------- the demo
-type Phase = "drop" | "scan" | "verdict";
-
-interface Scenario {
-  file: string;
-  context: string;
-  rows: string[][];
-  bad: number[];
-  tone: "crit" | "ok";
-  headline: string;
-  summary: string;
-  findings: { level: "problem" | "warning" | "ok"; text: string; column?: string }[];
+/** If the scene cannot start (no WebGL after all), the still picture simply stays. */
+class SceneBoundary extends Component<{ onError: () => void; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch() { this.props.onError(); }
+  render() { return this.state.failed ? null : this.props.children; }
 }
 
-const HEADERS = ["order_id", "order_date", "country", "amount"];
-
-const SCENARIOS: Scenario[] = [
-  {
-    file: "orders_november.csv",
-    context: "1,200 rows · compared with orders_october.csv",
-    rows: [
-      ["7101", "2026-11-02", "Nigeria", "54.20"],
-      ["7102", "2031-01-01", "Ghana", "61.75"],
-      ["7103", "2026-11-02", "Kenya", "48.10"],
-      ["7104", "2026-11-03", "Nigeria", "72.00"],
-      ["7102", "2026-11-03", "Togo", "39.95"],
-      ["7106", "2026-11-04", "Ghana", "58.30"],
-    ],
-    bad: [1, 4],
-    tone: "crit",
-    headline: "Not safe to use",
-    summary: "2 problems and 1 warning",
-    findings: [
-      { level: "problem", column: "order_date", text: "has 15 dates in the future (latest: 2031-01-01)." },
-      { level: "problem", column: "order_id", text: "had no repeats last time. Now 4 values appear more than once." },
-      { level: "warning", column: "country", text: 'has 1 value never seen before: "Togo" (10 rows).' },
-    ],
-  },
-  {
-    file: "orders_december.csv",
-    context: "3,104 rows · compared with orders_october.csv",
-    rows: [
-      ["8101", "2026-12-01", "Nigeria", "51.40"],
-      ["8102", "2026-12-01", "Ghana", "66.10"],
-      ["8103", "2026-12-02", "Kenya", "47.85"],
-      ["8104", "2026-12-02", "Nigeria", "70.25"],
-      ["8105", "2026-12-03", "Kenya", "42.60"],
-      ["8106", "2026-12-03", "Ghana", "59.90"],
-    ],
-    bad: [],
-    tone: "ok",
-    headline: "Looks like last time",
-    summary: "Nothing needs your attention",
-    findings: [
-      { level: "ok", text: "All 8 columns are present, with the same types as before." },
-      { level: "ok", text: "3,104 rows, within the usual range." },
-      { level: "ok", text: "No new values, no repeated IDs, no dates in the future." },
-    ],
-  },
-];
-
-const DURATION: Record<Phase, number> = { drop: 1300, scan: 2100, verdict: 4600 };
-const NEXT: Record<Phase, Phase> = { drop: "scan", scan: "verdict", verdict: "drop" };
-
-function Demo() {
-  const reduce = useReducedMotion();
-  const [index, setIndex] = useState(0);
-  const [phase, setPhase] = useState<Phase>(reduce ? "verdict" : "drop");
-  const scenario = SCENARIOS[index];
-
+function useScene() {
+  const reduced = useReducedMotion();
+  const [wanted, setWanted] = useState(false);
   useEffect(() => {
-    if (reduce) return;
-    const timer = window.setTimeout(() => {
-      if (phase === "verdict") setIndex((i) => (i + 1) % SCENARIOS.length);
-      setPhase(NEXT[phase]);
-    }, DURATION[phase]);
-    return () => window.clearTimeout(timer);
-  }, [phase, reduce]);
+    if (reduced || !canRun3d()) { setWanted(false); return; }
+    // Wait until the page has loaded and the browser is idle, so the first screen is never held up.
+    let idle = 0;
+    let timer = 0;
+    const start = () => {
+      if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(() => setWanted(true), { timeout: 2500 });
+      else timer = window.setTimeout(() => setWanted(true), 400);
+    };
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
+    return () => {
+      window.removeEventListener("load", start);
+      if (idle) window.cancelIdleCallback(idle);
+      if (timer) clearTimeout(timer);
+    };
+  }, [reduced]);
+  return wanted;
+}
 
-  const scanned = phase !== "drop";
-  const done = phase === "verdict";
-  const crit = scenario.tone === "crit";
+function usePageVisible() {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const onChange = () => setVisible(document.visibilityState === "visible");
+    document.addEventListener("visibilitychange", onChange);
+    return () => document.removeEventListener("visibilitychange", onChange);
+  }, []);
+  return visible;
+}
+
+function Stage() {
+  const stage = useRef<HTMLDivElement>(null);
+  const wanted = useScene();
+  const onScreen = useInView(stage, { margin: "80px" });
+  const pageVisible = usePageVisible();
+  const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [phase, setPhase] = useState<ScenePhase>("verdict");
+  useEffect(() => { if (!wanted) { setReady(false); setPhase("verdict"); } }, [wanted]);
 
   return (
-    <div
-      className="relative mx-auto w-full max-w-[940px] overflow-hidden rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(9,10,15,0.04),0_24px_60px_-20px_rgba(9,10,15,0.18)]"
-      role="img"
-      aria-label="Animated example. A file called orders_november.csv is checked and found not safe to use, with two problems and one warning. The next file, orders_december.csv, looks like last time."
-    >
-      <BorderBeam size={220} duration={9} colorFrom="#090a0f" colorTo="#9ca3af" borderWidth={1.5} />
-
-      <div className="flex items-center gap-2 border-b border-line bg-soft px-4 py-2.5" aria-hidden>
-        <span className="h-2.5 w-2.5 rounded-full bg-line2" />
-        <span className="h-2.5 w-2.5 rounded-full bg-line2" />
-        <span className="h-2.5 w-2.5 rounded-full bg-line2" />
-        <span className="ml-3 font-mono text-[12px] text-muted">127.0.0.1 · pdq ui</span>
-        <span className="ml-auto hidden items-center gap-1.5 font-mono text-[11px] text-muted sm:flex">
-          <ShieldCheck size={13} /> nothing leaves this computer
-        </span>
-      </div>
-
-      <div className="grid gap-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]" aria-hidden>
-        {/* The file */}
-        <div className="border-b border-line p-5 md:border-b-0 md:border-r">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={scenario.file}
-              initial={{ opacity: 0, y: -14, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ type: "spring", stiffness: 260, damping: 22 }}
-              className="mb-3 inline-flex max-w-full items-center gap-2 rounded-lg border border-line bg-soft px-3 py-2"
-            >
-              <FileSpreadsheet size={16} className="shrink-0" />
-              <span className="truncate font-mono text-[13px]">{scenario.file}</span>
-            </motion.div>
-          </AnimatePresence>
-          <p className="mb-3 font-mono text-[11px] text-muted">{scenario.context}</p>
-
-          <div className="relative overflow-hidden rounded-lg border border-line">
-            <div className="grid grid-cols-4 border-b border-line bg-soft">
-              {HEADERS.map((h) => (
-                <span key={h} className="truncate px-2.5 py-1.5 font-mono text-[10.5px] font-medium text-muted">{h}</span>
-              ))}
-            </div>
-            {scenario.rows.map((row, r) => {
-              const flagged = scanned && scenario.bad.includes(r);
-              return (
-                <motion.div
-                  key={scenario.file + r}
-                  className="grid grid-cols-4 border-b border-soft2 last:border-0"
-                  animate={{ backgroundColor: flagged ? "#fef2f2" : "#ffffff" }}
-                  transition={{ delay: flagged && phase === "scan" ? 0.3 + r * 0.28 : 0, duration: 0.25 }}
-                >
-                  {row.map((cell, c) => (
-                    <span key={c} className={cn("truncate px-2.5 py-[7px] font-mono text-[11.5px]", flagged ? "text-crit-ink" : "text-slate2")}>
-                      {cell}
-                    </span>
-                  ))}
-                </motion.div>
-              );
-            })}
-            {phase === "scan" && (
-              <motion.div
-                className="pointer-events-none absolute inset-x-0 h-10 bg-gradient-to-b from-transparent via-ink/[0.07] to-transparent"
-                initial={{ top: "0%" }}
-                animate={{ top: "100%" }}
-                transition={{ duration: 1.9, ease: "linear" }}
-              >
-                <div className="absolute inset-x-0 bottom-0 h-px bg-ink/60" />
-              </motion.div>
-            )}
-          </div>
+    <div ref={stage} className="relative mx-auto aspect-[5/4] w-full max-w-[720px] lg:aspect-auto lg:h-full lg:max-w-none">
+      <p className="sr-only">
+        Illustration: a sheet of spreadsheet cells is scanned from top to bottom. The cells with something wrong, such as a row
+        that is a copy of the one above, two impossible ages and two dates in the future, lift out of the sheet and turn red or
+        amber. The rest turn green. The verdict for the file reads: {SAMPLE_VERDICT.headline}, {SAMPLE_VERDICT.summary} in {SAMPLE_VERDICT.file}.
+      </p>
+      <div aria-hidden className="absolute inset-0 lg:-inset-x-10 lg:-inset-y-6">
+        <div className="absolute left-1/2 top-1/2 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.07),transparent)]" />
+        <div className="absolute inset-0 transition-opacity duration-700" style={{ opacity: ready ? 0 : 1 }}>
+          <HeroPoster />
         </div>
+        {wanted && !failed && (
+          <div className="absolute inset-0 transition-opacity duration-700" style={{ opacity: ready ? 1 : 0 }}>
+            <SceneBoundary onError={() => { setFailed(true); setReady(false); setPhase("verdict"); }}>
+              <Suspense fallback={null}>
+                <HeroScene
+                  active={onScreen && pageVisible}
+                  onReady={() => setReady(true)}
+                  onPhase={setPhase}
+                  onUnsupported={() => { setFailed(true); setReady(false); setPhase("verdict"); }}
+                />
+              </Suspense>
+            </SceneBoundary>
+          </div>
+        )}
 
-        {/* The answer */}
-        <div className="min-h-[300px] p-5">
-          <AnimatePresence mode="wait">
-            {!done ? (
-              <motion.div
-                key="waiting"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex h-full min-h-[260px] flex-col items-center justify-center gap-3 text-muted"
-              >
-                <span className="font-mono text-[12px]">{phase === "drop" ? "file received" : "checking every column…"}</span>
-                <span className="h-1 w-40 overflow-hidden rounded bg-soft2">
-                  <motion.span
-                    className="block h-full rounded bg-ink"
-                    initial={{ width: "4%" }}
-                    animate={{ width: phase === "scan" ? "100%" : "12%" }}
-                    transition={{ duration: phase === "scan" ? 1.9 : 0.6, ease: "easeInOut" }}
-                  />
-                </span>
-              </motion.div>
-            ) : (
-              <motion.div key={"verdict" + scenario.file} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ type: "spring", stiffness: 240, damping: 20 }}
-                  className={cn(
-                    "mb-3 flex items-center gap-3 rounded-xl border px-4 py-3.5",
-                    crit ? "border-crit-line bg-crit-bg" : "border-ok-line bg-ok-bg",
-                  )}
-                >
-                  {crit ? <CircleX size={26} className="shrink-0 text-crit-ink" /> : <CircleCheck size={26} className="shrink-0 text-ok-ink" />}
-                  <div>
-                    <p className={cn("font-display text-[22px] font-semibold leading-tight tracking-[-0.02em]", crit ? "text-crit-ink" : "text-ok-ink")}>
-                      {scenario.headline}
-                    </p>
-                    <p className="text-[13px] text-slate2">{scenario.summary}</p>
-                  </div>
+        {/* The verdict, on a white sheet like the app's own result screen. */}
+        <div className="absolute bottom-[4%] left-[2%] w-[min(310px,78%)] lg:bottom-[9%] lg:left-[4%]">
+          <div className="overflow-hidden rounded-xl border border-white/20 bg-white text-ink shadow-sheet">
+            <AnimatePresence mode="wait" initial={false}>
+              {phase === "verdict" ? (
+                <motion.div key="verdict" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25 }} className="flex items-center gap-3 border-l-4 border-crit-ink p-3.5">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-crit-bg text-crit-ink"><CircleX size={20} /></span>
+                  <span className="min-w-0">
+                    <span className="block font-display text-[17px] font-semibold leading-tight tracking-[-0.005em]">{SAMPLE_VERDICT.headline}</span>
+                    <span className="block truncate text-[12.5px] text-muted">{SAMPLE_VERDICT.summary}</span>
+                  </span>
                 </motion.div>
-                <ul className="flex flex-col gap-2">
-                  {scenario.findings.map((finding, i) => (
-                    <motion.li
-                      key={i}
-                      initial={{ opacity: 0, x: 12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.25 + i * 0.16, duration: 0.35, ease: "easeOut" }}
-                      className="flex items-start gap-2.5 rounded-lg border border-line px-3 py-2.5 text-[13.5px] leading-snug"
-                    >
-                      <span
-                        className={cn(
-                          "mt-[5px] h-2 w-2 shrink-0 rounded-full",
-                          finding.level === "problem" ? "bg-crit-ink" : finding.level === "warning" ? "bg-warn-ink" : "bg-ok-ink",
-                        )}
-                      />
-                      <span>
-                        {finding.column && <span className="chip mr-1">{finding.column}</span>}
-                        {finding.text}
-                      </span>
-                    </motion.li>
-                  ))}
-                </ul>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              ) : (
+                <motion.div key="checking" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25 }} className="flex items-center gap-3 border-l-4 border-line2 p-3.5">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-soft2 text-slate2"><LoaderCircle size={20} className="animate-spin" /></span>
+                  <span className="min-w-0">
+                    <span className="block font-display text-[17px] font-semibold leading-tight tracking-[-0.005em]">Checking</span>
+                    <span className="block truncate font-mono text-[12px] text-muted">{SAMPLE_VERDICT.file}</span>
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// -------------------------------------------------------------------- hero
-const rise = {
+const sequence: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } } };
+const rise: Variants = {
   hidden: { opacity: 0, y: 18, filter: "blur(6px)" },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { delay: 0.08 * i, duration: 0.6, ease: [0.21, 0.6, 0.35, 1] as [number, number, number, number] },
-  }),
+  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.7, ease: [0.21, 0.6, 0.35, 1] } },
 };
+
+// The headline is the largest thing on the first screen, so it is painted at once and only slides.
+const headline: Variants = { hidden: { y: 18 }, show: { y: 0, transition: { duration: 0.7, ease: [0.21, 0.6, 0.35, 1] } } };
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pb-16 pt-28 md:pb-24 md:pt-36" id="top">
-      <DotPattern
-        width={22}
-        height={22}
-        cr={1}
-        className="text-ink/20 [mask-image:radial-gradient(ellipse_60%_55%_at_50%_30%,black,transparent)]"
-      />
-      <div className="wrap relative">
-        <motion.div initial="hidden" animate="show" className="mx-auto flex max-w-[860px] flex-col items-center text-center">
-          <motion.a
-            variants={rise}
-            custom={0}
-            href={LINKS.github}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3.5 py-1.5 text-[13px] text-slate2 transition-colors hover:border-line2"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-ok-ink" aria-hidden />
-            Free and open source · runs on your own computer
-            <ArrowRight size={14} aria-hidden />
-          </motion.a>
+    <section id="top" className="grain relative overflow-hidden">
+      <div aria-hidden className="grid-floor absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_65%_40%,black,transparent)]" />
+      <div aria-hidden className="absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(ellipse_60%_100%_at_70%_0%,rgba(148,163,184,0.16),transparent)]" />
 
-          <motion.h1
-            variants={rise}
-            custom={1}
-            className="font-display text-[44px] font-semibold leading-[1.02] tracking-[-0.04em] sm:text-[60px] md:text-[76px]"
-          >
-            Know whether a data file is <span className="relative whitespace-nowrap">safe to use
-              <motion.span
-                aria-hidden
-                className="absolute -bottom-1 left-0 h-[5px] w-full origin-left rounded bg-ink md:-bottom-2 md:h-[7px]"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ delay: 0.75, duration: 0.7, ease: [0.21, 0.6, 0.35, 1] }}
-              />
-            </span>.
-          </motion.h1>
-
-          <motion.p variants={rise} custom={2} className="lede mt-7 max-w-[620px]">
-            Someone sends you a spreadsheet or a CSV. Drop it in and get a plain answer in seconds:
-            what is wrong with it, and what changed since the last one.
+      <div className="wrap relative grid items-center gap-2 pb-10 pt-28 lg:min-h-[100svh] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-4 lg:pb-20 lg:pt-24">
+        <motion.div variants={sequence} initial="hidden" animate="show" className="relative z-10 max-w-[600px]">
+          <motion.p variants={rise} className="eyebrow mb-6 flex items-center gap-2.5">
+            <span className="h-px w-8 bg-white/30" aria-hidden />
+            Free and open source
           </motion.p>
-
-          <motion.div variants={rise} custom={3} className="mt-9 flex flex-wrap items-center justify-center gap-3">
+          <motion.h1 variants={headline} className="font-display text-[44px] font-semibold leading-[0.98] tracking-[-0.015em] sm:text-[60px] lg:text-[76px]">
+            Know whether a data file is safe to use.
+          </motion.h1>
+          <motion.p variants={rise} className="lede mt-7 max-w-[520px]">
+            Someone sends you a spreadsheet or a CSV. Drop it in and get a plain answer in seconds: what is wrong with it,
+            and what changed since the last one.
+          </motion.p>
+          <motion.div variants={rise} className="mt-9 flex flex-wrap items-center gap-3">
             <CopyCommand command="pip install pydataquality" />
-            <a href="#how" className="btn-dark">
-              See how it works <ArrowRight size={16} aria-hidden />
+            <a href="#how" className="btn-ghost min-h-[48px] border-transparent bg-transparent">
+              See how it works <ArrowDown size={16} aria-hidden />
             </a>
           </motion.div>
-
-          <motion.p variants={rise} custom={4} className="mt-5 font-mono text-[12px] text-muted">
-            Then run <span className="text-ink">pdq ui</span> · Python 3.8+ · Windows, macOS, Linux
+          <motion.p variants={rise} className="mt-7 flex items-center gap-2.5 text-[14px] text-fog">
+            <MonitorCheck size={17} className="shrink-0 text-white/70" aria-hidden />
+            It runs on your own computer. Your file is not uploaded anywhere.
           </motion.p>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55, duration: 0.8, ease: [0.21, 0.6, 0.35, 1] }}
-          className="mt-14 md:mt-20"
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.1, delay: 0.25, ease: [0.21, 0.6, 0.35, 1] }}
+          className="relative lg:h-[min(640px,72vh)]"
         >
-          <Demo />
+          <Stage />
         </motion.div>
       </div>
     </section>

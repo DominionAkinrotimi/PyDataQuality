@@ -1,7 +1,7 @@
 // Screen 2: the verdict and the findings.
 
 import { useState } from "react";
-import { Bookmark, CircleCheck, CircleHelp, Download, Eye, FileText, RotateCcw, Terminal } from "lucide-react";
+import { Bookmark, CircleCheck, CircleHelp, Download, Eye, FileText, RotateCcw, Terminal, Wrench } from "lucide-react";
 import { api, type CheckResult, type Finding, type Level } from "../api";
 import {
   Badge, CopyButton, Loading, Message, Notice, Page, VerdictIcon,
@@ -258,6 +258,13 @@ export function Result({ id }: { id: string }) {
               </>
             )}
             <div className="mt-4 flex flex-col gap-2 border-t border-line pt-4">
+              {result.problems + result.warnings > 0 && (
+                <a className="btn-outline justify-start" href={href("fix", result.id)}>
+                  <Wrench size={16} aria-hidden />
+                  Fix this file
+                  <span className="ml-auto text-sm2 text-muted">makes a copy</span>
+                </a>
+              )}
               {result.affected_rows > 0 && (
                 <a className="btn-outline justify-start" href={api.rowsLink(result.id, "all")}>
                   <Download size={16} aria-hidden />

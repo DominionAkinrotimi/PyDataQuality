@@ -8,6 +8,7 @@ request that reads or changes anything.
 """
 
 import datetime as _dt
+import io
 import json
 import mimetypes
 import os
@@ -26,9 +27,10 @@ import numpy as np
 import pandas as pd
 
 from . import baseline as base
+from . import fixer
 from . import semantic as sem
 from .checker import CheckResult, DataFileError, check, excel_sheets, load_file
-from .standalone import ALL_COLUMNS
+from .standalone import ALL_COLUMNS, NOTE
 from .webui import report_html
 
 MAX_UPLOAD_BYTES = 300 * 1024 * 1024
@@ -348,6 +350,65 @@ class App:
         stem = os.path.splitext(safe_filename(result.name))[0]
         return report_html(result), f"{stem}_check.html"
 
+    # -- fixing -----------------------------------------------------------
+    def fixes(self, result_id: str) -> Dict:
+        result: CheckResult = self._held(result_id)["result"]
+        proposals = [p.to_dict() for p in result.fixes()]
+        return {
+            "id": result_id,
+            "file": result.name,
+            "rows": int(len(result.original)),
+            "fixable": [p for p in proposals if p["options"]],
+            "not_fixable": [p for p in proposals if not p["options"] and p["level"] != "note"],
+        }
+
+    def apply_fixes(self, result_id: str, choices) -> Dict:
+        held = self._held(result_id)
+        result: CheckResult = held["result"]
+        if not isinstance(choices, dict) or not choices:
+            raise BadRequest("Choose at least one thing to fix.")
+        try:
+            outcome = result.fix({str(key): str(action) for key, action in choices.items()})
+        except ValueError as error:
+            raise BadRequest(str(error))
+        held["fixed"] = outcome
+        again = outcome.result
+        return {
+            "id": result_id,
+            "file": fixer.fixed_name(safe_filename(result.name)),
+            "removed_rows": outcome.removed_rows,
+            "changed_cells": outcome.changed_cells,
+            "rows_left": int(len(outcome.df)),
+            "after": {
+                "verdict": again.verdict,
+                "headline": again.headline,
+                "problems": len(again.problems),
+                "warnings": len(again.warnings),
+                "left": [f.message for f in again.findings if f.level != NOTE][:8],
+            },
+        }
+
+    def _fixed(self, result_id: str):
+        held = self._held(result_id)
+        if "fixed" not in held:
+            raise NotFound("No corrected copy has been made for this result yet.")
+        return held["result"], held["fixed"]
+
+    def fixed_file(self, result_id: str):
+        result, outcome = self._fixed(result_id)
+        name = fixer.fixed_name(safe_filename(result.name))
+        if name.endswith(".xlsx"):
+            buffer = io.BytesIO()
+            outcome.df.to_excel(buffer, index=False)
+            kind = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            return buffer.getvalue(), name, kind
+        return outcome.df.to_csv(index=False), name, "text/csv"
+
+    def fixed_changes(self, result_id: str):
+        result, outcome = self._fixed(result_id)
+        stem = os.path.splitext(safe_filename(result.name))[0]
+        return outcome.changes_frame().to_csv(index=False), f"{stem}_changes.csv"
+
     # -- baselines --------------------------------------------------------
     def _dataset_path(self, name: str) -> str:
         return os.path.join(self.store, f"{safe_dataset_name(name)}.yml")
@@ -640,6 +701,14 @@ def _make_handler(app: App):
                 if path == "/download/rows":
                     body, name = app.rows_csv(query.get("id", ""), query.get("finding", "all"))
                     return self._send(200, body, "text/csv", {"Content-Disposition": f'attachment; filename="{name}"'})
+                if path == "/api/fixes":
+                    return self._json(200, app.fixes(query.get("id", "")))
+                if path == "/download/fixed":
+                    body, name, kind = app.fixed_file(query.get("id", ""))
+                    return self._send(200, body, kind, {"Content-Disposition": f'attachment; filename="{name}"'})
+                if path == "/download/changes":
+                    body, name = app.fixed_changes(query.get("id", ""))
+                    return self._send(200, body, "text/csv", {"Content-Disposition": f'attachment; filename="{name}"'})
                 if path == "/download/report":
                     body, name = app.report(query.get("id", ""))
                     return self._send(200, body, "text/html", {"Content-Disposition": f'attachment; filename="{name}"'})
@@ -671,6 +740,8 @@ def _make_handler(app: App):
                     return self._json(200, app.check_sample())
                 if path == "/api/accept":
                     return self._json(200, app.accept(body.get("id"), body.get("name"), body.get("skip") or []))
+                if path == "/api/fix":
+                    return self._json(200, app.apply_fixes(body.get("id"), body.get("choices")))
                 if path == "/api/ignore":
                     return self._json(200, app.ignore(body.get("id"), str(body.get("key", ""))))
                 if path == "/api/unignore":

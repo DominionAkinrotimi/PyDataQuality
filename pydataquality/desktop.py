@@ -157,6 +157,8 @@ def _exercise_files(folder: str) -> None:
         raise RuntimeError("The Excel copy of the sample file came back with no problems.")
     if "<html" not in result.to_html().lower():
         raise RuntimeError("The summary page was not written.")
+    if not result.fix().removed_rows:
+        raise RuntimeError("Fixing the sample file removed no repeated rows.")
     accept(path)
     if check(path).baseline is None:
         raise RuntimeError("The saved baseline was not found again.")

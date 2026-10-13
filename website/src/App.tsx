@@ -1,6 +1,5 @@
 import { Suspense, useState, type ReactNode } from "react";
 import { MotionConfig, motion, useMotionValueEvent, useScroll } from "motion/react";
-import { ShieldCheck } from "lucide-react";
 import { Hero } from "./sections/Hero";
 import { Finds } from "./sections/Finds";
 import { Answers, Engine, FirstFile, Outcomes } from "./sections/Solution";
@@ -8,6 +7,7 @@ import { Tour } from "./sections/Tour";
 import { Paper } from "./sections/Paper";
 import { CallToAction, Fit, GetStarted, Questions, Ways } from "./sections/Closing";
 import { LINKS } from "./lib/links";
+import { Mark } from "./components/Mark";
 import { cn } from "./lib/utils";
 import { Wake } from "./lib/wake";
 
@@ -23,7 +23,7 @@ function GithubMark() {
 function Logo() {
   return (
     <a href="#top" className="flex min-h-[44px] items-center gap-2.5 font-display text-[17px] font-semibold tracking-[-0.005em]">
-      <span className="grid h-8 w-8 place-items-center rounded-lg bg-white text-ink" aria-hidden><ShieldCheck size={18} /></span>
+      <span className="grid h-8 w-8 place-items-center rounded-lg bg-white" aria-hidden><Mark size={26} /></span>
       PyDataQuality
     </a>
   );

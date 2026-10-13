@@ -4,11 +4,13 @@ import { useState, type ReactNode } from "react";
 import { api, type Verdict } from "../api";
 import { Notice, Page, VerdictBadge, href, useLoad } from "../ui";
 
+const RELEASES = "https://github.com/DominionAkinrotimi/PyDataQuality/releases/latest";
+
 const STEPS: [string, string][] = [
   ["Check", "Drop in a file. You get a verdict and a short list of what is wrong, worst first."],
   ["Remember", "When a file is good, save it as normal. PyDataQuality learns its columns, values and ranges. You write no rules."],
   ["Check the next one", "The next version is compared with it automatically, so you also see what changed."],
-  ["Act", "Download the affected rows with the reason for each, or a one-page summary to send back."],
+  ["Act", "Fix what can be fixed and save a corrected copy, download the affected rows with the reason for each, or send back a one-page summary."],
 ];
 
 const VERDICTS: [Verdict, string, string, string][] = [
@@ -112,9 +114,37 @@ export function Help() {
           <ul className="flex list-disc flex-col gap-1.5 pl-5 text-muted">
             <li>If the whole file is fine, save it as the new normal.</li>
             <li>If one finding is fine, use “This is fine” on it. It stops being reported for that dataset, and you can turn it back on under <a className="underline" href={href("datasets")}>My datasets</a>.</li>
-            <li>If the columns look wrong, the file probably has title rows above the header. Remove them and try again.</li>
+            <li>Title rows above the table are skipped, and the result says which row the table starts on. If the column names still look wrong, put the headings in the first row and try again.</li>
             <li>If a file cannot be read, it may be open in Excel, password protected or damaged.</li>
           </ul>
+        </Section>
+
+        <Section title="Fixing a file">
+          <p className="text-muted">
+            “Fix this file” on a result lists what can be done about each finding. You choose, and you get a corrected copy
+            plus a list of every change. Your original file is never changed.
+          </p>
+          <ul className="flex list-disc flex-col gap-1.5 pl-5 text-muted">
+            <li>Marked “Safe to fix”: removing exact copies of a row, and using one spelling for a value.</li>
+            <li>Yours to decide: emptying a wrong value, removing a row, or rewriting dates in one format.</li>
+            <li>Not fixable here: anything missing from the file, such as a column or half the rows.</li>
+          </ul>
+        </Section>
+
+        <Section title="Updates">
+          <p>
+            You have version <span className="font-mono">{state.data ? state.data.version : "…"}</span>.
+          </p>
+          <p className="text-muted">
+            PyDataQuality never goes online, so it cannot look for a newer version itself. This link opens the downloads
+            page in your browser, where the newest version is at the top.
+          </p>
+          <a className="btn-outline self-start" href={RELEASES} target="_blank" rel="noreferrer">
+            See the latest version
+          </a>
+          <p className="text-muted">
+            To update, download the new setup file and run it. It replaces this version and keeps everything you have saved.
+          </p>
         </Section>
 
         <Section title="From a terminal or Python">
@@ -123,6 +153,7 @@ export function Help() {
 pdq accept orders.csv       # remember it as normal
 pdq rows orders.csv         # save the affected rows
 pdq report orders.csv       # one-page summary to share
+pdq fix orders.csv          # save a corrected copy
 
 import pydataquality as pdq
 result = pdq.check("orders.csv")`}</pre>

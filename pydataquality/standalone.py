@@ -188,6 +188,26 @@ def check_unique_id(df: pd.DataFrame, column, kind: str) -> List[Finding]:
     ]
 
 
+def spelling_map(values: pd.Series) -> Dict[str, str]:
+    """
+    For values written several ways, {a spelling: the one to use instead}. The
+    one to use is the most common spelling, with stray spaces taken off.
+    """
+    counts = values.value_counts()
+    if len(counts) > 5000:
+        return {}
+    normalised = counts.index.to_series().str.strip().str.replace(r"\s+", " ", regex=True).str.casefold()
+    groups = counts.groupby(normalised.values).agg(["size", "idxmax"])
+    clashing = groups[groups["size"] > 1]
+    mapping = {}
+    for value, key in normalised.items():
+        if key in clashing.index:
+            target = " ".join(str(clashing.loc[key, "idxmax"]).split())
+            if value != target:
+                mapping[value] = target
+    return mapping
+
+
 def check_spelling(df: pd.DataFrame, column, kind: str) -> List[Finding]:
     """The same value written with different capitals or spacing."""
     # Only for columns that hold a short list of labels, such as a country or a

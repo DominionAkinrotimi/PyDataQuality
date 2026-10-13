@@ -181,8 +181,11 @@ def _read_delimited(path: str) -> pd.DataFrame:
 class CheckResult:
     """Outcome of :func:`check`."""
 
-    def __init__(self, df, findings, name, baseline=None, baseline_source=None, kinds=None, hidden=0):
+    def __init__(self, df, findings, name, baseline=None, baseline_source=None, kinds=None, hidden=0, original=None):
         self.df = df
+        # The table as it was read, before "--" and the like were treated as empty.
+        # A corrected copy is made from this, so nothing changes that was not chosen.
+        self.original = df if original is None else original
         self.findings: List[Finding] = sorted(findings, key=lambda f: (LEVEL_ORDER[f.level], -f.count))
         self.name = name
         self.baseline = baseline
@@ -250,6 +253,26 @@ class CheckResult:
         rows = self.df.loc[[i for i in self.df.index if i in reasons]].copy()
         rows[REASON_COLUMN] = ["; ".join(reasons[i]) for i in rows.index]
         return rows
+
+    # -- fixing -----------------------------------------------------------
+    def fixes(self):
+        """What can be done about each finding. See :mod:`pydataquality.fixer`."""
+        from .fixer import propose
+
+        return propose(self)
+
+    def fix(self, choices: Optional[Dict[str, str]] = None):
+        """
+        Apply fixes to a copy of the data and check the copy again. The original
+        is not touched. With no ``choices``, only the recommended fixes are made:
+        exact copies of a row are removed and spellings are made consistent.
+
+        Returns a :class:`pydataquality.fixer.FixOutcome` with the corrected
+        table (``.df``), the list of changes and the new result.
+        """
+        from .fixer import apply
+
+        return apply(self, choices)
 
     # -- output -----------------------------------------------------------
     def to_dict(self) -> Dict:
@@ -428,6 +451,7 @@ def check(
         return CheckResult(df, [stop], label, kinds={c: sem.TEXT for c in df.columns})
 
     header_row = int(df.attrs.get("header_row", 1))
+    as_read = df
     df = sem.blank_placeholders(df)
     kinds = sem.infer_kinds(df)
     known, source = (None, None) if baseline is False else _resolve_baseline(baseline, path, df.columns)
@@ -470,7 +494,9 @@ def check(
         wanted_codes = {str(c).strip().lower().replace(" ", "_") for c in only}
         kept = [f for f in kept if f.code in wanted_codes]
 
-    return CheckResult(df, kept, label, baseline=known, baseline_source=source, kinds=kinds, hidden=hidden)
+    return CheckResult(
+        df, kept, label, baseline=known, baseline_source=source, kinds=kinds, hidden=hidden, original=as_read
+    )
 
 
 def accept(data: Union[str, pd.DataFrame], path: Optional[str] = None, name: Optional[str] = None) -> str:

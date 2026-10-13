@@ -1,8 +1,11 @@
 import { useRef, type ReactNode } from "react";
-import { motion, useInView, useReducedMotion, useScroll, useSpring } from "motion/react";
+import { motion, useInView, useScroll, useSpring } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
-import { NumberTicker } from "@/components/magicui/number-ticker";
-import { Heading, Reveal, TiltCard } from "@/components/ui";
+import { Heading, Reveal, Screenshot, TiltCard } from "@/components/ui";
+import clean960 from "@/assets/shots/clean-960.webp";
+import clean1920 from "@/assets/shots/clean-1920.webp";
+import compare960 from "@/assets/shots/compare-960.webp";
+import compare1920 from "@/assets/shots/compare-1920.webp";
 import { cn } from "@/lib/utils";
 
 /**
@@ -96,12 +99,59 @@ export function Outcomes() {
   );
 }
 
+// ------------------------------------------------------- one file is enough
+// Screenshots of the real app. The files are small example files made for these pictures.
+const CASES = [
+  {
+    label: "The first time",
+    title: "Checked on its own.",
+    text: "Duplicates, impossible values, broken dates, mixed spellings.",
+    small: clean960, large: clean1920,
+    alt: "PyDataQuality result for survey_responses.csv, a file checked for the first time: a green banner reading \"Nothing obviously wrong\", with 0 problems, 0 warnings and 6 clean columns.",
+  },
+  {
+    label: "If it comes again (optional)",
+    title: "Compared with the last one.",
+    text: "Save a good file once. The next one is checked against it.",
+    small: compare960, large: compare1920,
+    alt: "PyDataQuality result for orders_september.csv compared with orders_august.csv: a red banner reading \"Not safe to use\", with 3 problems and 1 warning, including 9 dates in the future and a missing column.",
+  },
+];
+
+export function FirstFile() {
+  return (
+    <section className="later relative overflow-hidden border-y border-white/[0.07] bg-night-1 py-24 md:py-36" id="first">
+      <div className="wrap">
+        <Heading
+          eyebrow="One file is enough"
+          title="No earlier version needed."
+          lede="Most files arrive once. It checks a file on its own. Comparing with an earlier one is a bonus, not a requirement."
+        />
+        <div className="mt-14 grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-2 lg:gap-8">
+          {CASES.map((item, i) => (
+            <Reveal key={item.label} delay={0.1 * i}>
+              <figure>
+                <Screenshot small={item.small} large={item.large} alt={item.alt} sizes="(min-width: 1024px) 560px, 92vw" />
+                <figcaption className="mt-6">
+                  <p className="eyebrow">{item.label}</p>
+                  <p className="mt-2 font-display text-[24px] font-semibold leading-tight tracking-[-0.01em]">{item.title}</p>
+                  <p className="mt-1.5 text-[16px] text-fog">{item.text}</p>
+                </figcaption>
+              </figure>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ------------------------------------------------- what happens to a file
 const STAGES: { title: string; text: ReactNode }[] = [
   { title: "Reads the file", text: <>CSV, Excel, JSON or Parquet, on your computer.</> },
   { title: "Works out each column", text: <>ID, date, email, number, category or text.</> },
   { title: "Runs the checks that fit", text: <>A future <span className="chip-dark">signup_date</span> is a problem. A future <span className="chip-dark">due_date</span> is not.</> },
-  { title: "Compares with last time", text: <>Missing columns, new values, far fewer rows, shifted numbers.</> },
+  { title: "Compares, if you saved an earlier file", text: <>Missing columns, new values, far fewer rows, shifted numbers.</> },
   { title: "Writes the answer", text: <>One sentence per finding. The worst one sets the verdict.</> },
 ];
 
@@ -204,21 +254,15 @@ const STATS: { value: number; suffix: string; text: string; source: string; href
     text: "COVID-19 cases were left out of England's daily count when a file hit a spreadsheet row limit.",
     source: "Public Health England, October 2020",
     href: "https://theconversation.com/why-you-should-never-use-excel-to-count-coronavirus-cases-147681",
-    answer: "It remembers the last file.",
-    detail: "Far fewer rows than last time, or a missing column, gets flagged.",
+    answer: "It can remember the last file.",
+    detail: "Save a good file once. Far fewer rows next time, or a missing column, gets flagged.",
   },
 ];
 
 function Figure({ value, suffix }: { value: number; suffix: string }) {
-  const reduced = useReducedMotion();
-  const label = `${value.toLocaleString("en-US")}${suffix}`;
   return (
     <p className="font-display text-[52px] font-semibold leading-none tracking-[-0.03em] tabular-nums md:text-[64px]">
-      <span className="sr-only">{label}</span>
-      <span aria-hidden>
-        {reduced ? value.toLocaleString("en-US") : <NumberTicker value={value} className="tracking-[-0.03em] text-white" />}
-        {suffix}
-      </span>
+      {value.toLocaleString("en-US")}{suffix}
     </p>
   );
 }

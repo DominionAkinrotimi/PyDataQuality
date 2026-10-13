@@ -8,8 +8,10 @@ import result960 from "@/assets/shots/result-960.webp";
 import result1920 from "@/assets/shots/result-1920.webp";
 import rows960 from "@/assets/shots/rows-960.webp";
 import rows1920 from "@/assets/shots/rows-1920.webp";
-import save960 from "@/assets/shots/save-960.webp";
-import save1920 from "@/assets/shots/save-1920.webp";
+import why960 from "@/assets/shots/why-960.webp";
+import why1920 from "@/assets/shots/why-1920.webp";
+import summary960 from "@/assets/shots/summary-960.webp";
+import summary1920 from "@/assets/shots/summary-1920.webp";
 
 // Screenshots of the real app (pdq ui, version 0.3) checking its built-in sample file.
 const SHOTS = [
@@ -32,10 +34,16 @@ const SHOTS = [
     alt: "The Affected rows screen: a table of the 30 rows where country is spelled \"nigeria\", each with the reason \"spelling\", and buttons to copy a message or download the rows.",
   },
   {
-    id: "save", label: "Save as normal", small: save960, large: save1920,
-    title: "Review what it learned.",
-    text: "See what it learned before you save. You write no rules.",
-    alt: "The Save as normal screen: a table listing each column, what it holds, such as \"numbers, no repeats\", and what will be checked next time, such as \"must stay unique\".",
+    id: "why", label: "Why?", small: why960, large: why1920,
+    title: "Ask how it was decided.",
+    text: "Each finding explains itself in a sentence.",
+    alt: "A result in the PyDataQuality app with \"Why?\" opened under a finding, showing a one-sentence explanation of how the finding was decided.",
+  },
+  {
+    id: "summary", label: "Summary to share", small: summary960, large: summary1920,
+    title: "One page to send.",
+    text: "A single file you can email to whoever produced the data.",
+    alt: "The summary page PyDataQuality writes for orders_september.csv: \"Not safe to use\", 3 problems and 1 warning, each listed as a sentence, with the columns that are unchanged.",
   },
 ] as const;
 
@@ -59,7 +67,7 @@ export function Tour() {
       <div className="wrap">
         <Heading
           eyebrow="The app"
-          title="Four screens. That is all you need."
+          title="See it on a real file."
           lede={<>Real screenshots, checking the sample file. Run <span className="chip-dark">pdq ui</span> to open it.</>}
           center
         />

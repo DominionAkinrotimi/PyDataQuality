@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dominionakinrotimi.github.io/PyDataQuality/sitemap.xml
